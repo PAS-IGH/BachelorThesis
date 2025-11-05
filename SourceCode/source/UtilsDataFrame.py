@@ -9,8 +9,7 @@ def createTimeSeriesDataFrame(dfData, sDepVar, sRenameDepVar ="y", bGerman = Tru
           1. Copies the given data frame and renames the dependant variable coloumn
           2. Replaces any ',' with '.' in order to avoid crashing of panda and related methods to the inability of handling German type floating point numbers
           3. Ensure that the dependent variable contains numeric values only
-
-          
+ 
      Args:
           dfData (pd.DataFrame): The data given as a frame 
           sDepVar (str): The name of the desired dependent variable
@@ -86,6 +85,6 @@ def getTestSet (dfData, sGroupVar, depVar, sRenameDepVar, bGerman) :
           iStop = (dfData[sGroupVar] > iAmount).idxmax()
           iPos = dfData.index.get_loc(iStop)
           # print(dfData.iloc[iPos:]) #sanity check
-          return createTimeSeriesDataFrame(dfData.iloc[iPos:], depVar, sRenameDepVar, bGerman).reset_index()
+          return createTimeSeriesDataFrame(dfData.iloc[iPos:].reset_index(), depVar, sRenameDepVar, bGerman)
      except:
         print("oh sHoet")  

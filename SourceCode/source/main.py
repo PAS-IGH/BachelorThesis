@@ -3,18 +3,85 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import UtilsDataFrame as udf
+from . import UtilsDataFrame as udf
+from . import STLUtils as stlu
+from . import StationaryUtils as statutil
 from pathlib import Path
+from coreforecast.scalers import boxcox, inv_boxcox, boxcox_lambda
+import matplotlib.pyplot as plt
+import statsmodels.tsa.seasonal as STL
 
 # read the given data sets
 script_dir = Path(__file__).parent
 
-file_path_300mm_noDMG_edited = script_dir.parent / "testData" /"300mm"/"300mm_NoDMG_20092025_edited.csv" #that should also be in createTimeSeriesDataFrame, the read csv file should always be turned into a dataframe 
-# df_300mm_edited = udf.getTrainTestSet(pd.read_csv(file_path_300mm_noDMG_edited), "Zaehler")
-df_train_300mm_edited = udf.getTrainSet(pd.read_csv(file_path_300mm_noDMG_edited), "Zaehler", "Torque_ax8", "Torque", True)
-df_test_300mm_edited = udf.getTestSet(pd.read_csv(file_path_300mm_noDMG_edited),"Zaehler", "Torque_ax8", "Torque", True)
+file_path_3mm_noDMG_edited = script_dir.parent / "testData" /"3mm"/"3mm_NoDMG_20092025_edited.csv" #that should also be in createTimeSeriesDataFrame, the read csv file should always be turned into a dataframe 
+#torque data needs to be put into absolute values due to the machine giving inverted data
+df_train_3mm_edited = udf.getTrainSet(pd.read_csv(file_path_3mm_noDMG_edited), "Zaehler", "Torque_ax8", "Torque", True).abs()
+df_test_3mm_edited = udf.getTestSet(pd.read_csv(file_path_3mm_noDMG_edited),"Zaehler", "Torque_ax8", "Torque", True).abs()
 
-print(df_train_300mm_edited) #sanity checks
-print(df_test_300mm_edited) #sanit checks
+# print(df_train_3mm_edited) #sanity checks
+# print(df_test_3mm_edited) #sanity checks
 
 #now onto detrending, remember get the lambda first then and save it as a global var for later detransforming after ARIMA modeling
+# Lambda by guerrero, transform by box cox
+opt_lambda_3mm_NoDmg = boxcox_lambda(df_train_3mm_edited["Torque"], method="guerrero", season_length=38)
+df_train_3mm_edited["Transformed"] = boxcox(df_train_3mm_edited["Torque"], opt_lambda_3mm_NoDmg)
+
+
+# print(opt_lambda_3mm_NoDmg)
+# print(df_train_3mm_edited["Transformed"])
+plt.figure(figsize=(10,6))
+plt.plot(df_train_3mm_edited["Torque"], alpha=0.7)
+plt.plot(df_train_3mm_edited["Transformed"], alpha=0.7)
+
+# plt.show()
+
+
+#STL implement. Get Graph and especially trend
+
+stl_3mm_edited = STL.STL(df_train_3mm_edited["Transformed"], period=6, seasonal=39)
+stl_fitted = stl_3mm_edited.fit()
+
+
+fig,axes = plt.subplots(4 , 1 ,figsize=(10,6), sharex=True)
+
+axes[0].plot(df_train_3mm_edited.index, stl_fitted.observed, color="black")
+axes[0].set_xlabel("Torque in nm transformed")
+axes[0].set_ylabel("Torque[nM]")
+
+axes[1].plot(df_train_3mm_edited.index, stl_fitted.trend, color="green")
+axes[1].set_ylabel("Trend")
+
+axes[2].plot(df_train_3mm_edited.index, stl_fitted.seasonal, color="blue")
+axes[2].set_ylabel("Seasonal")
+
+axes[3].plot(df_train_3mm_edited.index, stl_fitted.resid, color="red")
+axes[3].set_ylabel("Residual")
+axes[3].set_xlabel("Time in working steps")
+
+plt.tight_layout()
+# plt.show()
+
+# implment hyndmans formula for trend detection
+# print(stl_fitted.trend) #sanity check
+# print(stlu.getTrendStrength(stl_fitted.trend, stl_fitted.resid))
+
+# A trend strength more than 40 percent should be significant enough in deciding if 
+# there is a trend there, important for ADF and making time series stationary
+if stlu.getTrendStrength(stl_fitted.trend, stl_fitted.resid) >= 0.4:
+    bTrending = True
+else:
+    bTrending = False
+# print(bTrending)
+# Stationary checks; if trend then constant and trend, otherwise constant, schwart for lags and implment AIC for making it more precise
+
+
+print(statutil.getStationary(bTrending, df_train_3mm_edited["Transformed"]))
+
+
+
+# if stlu.getStationary(bTrending, df_train_3mm_edited["Transformed"]):
+#     bStationary = True
+# else:
+#     bStationay = False
+# print(bStationay)
