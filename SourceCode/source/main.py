@@ -73,10 +73,10 @@ if stlu.getTrendStrength(stl_fitted.trend, stl_fitted.resid) >= 0.4:
 else:
     bTrending = False
 # print(bTrending)
-# Stationary checks; if trend then constant and trend, otherwise constant, schwart for lags and implment AIC for making it more precise
+# Stationary checks; if trend then constant and trend, otherwise constant
 
 if bTrending:
-    nStationary = stlu.getStationary(df_train_3mm_edited["Transformed"], "ct", "5%", "ADF")
+    nStationary = statutil.getStationary(df_train_3mm_edited["Transformed"], "ct", "5%", "ADF")
     # as in the trend case, the series is already expected to be stationary, adf here should just decide upon if it is RWWD (H_0) or DT (H_0 rejected)
     # ergo if the series should be detrended or differenced; this might be a bit confusing when looking at the implementation and the var names
     if nStationary == 0:
@@ -86,6 +86,11 @@ if bTrending:
         print("difference")
     elif nStationary == -1:
         print(nStationary) #no idea yet
+
+else:
+
+    
+    print("implement for c and n") 
 
 
 # if stlu.getStationary(bTrending, df_train_3mm_edited["Transformed"]): put in ct otherwise c or in extreme cases with zero mean n, type of test

@@ -7,18 +7,20 @@ def getStationary(df_DataSeries, s_regress, n_alpha, s_test_type):
     if s_test_type == "ADF":
         return checkStatADFKPSS(df_DataSeries, s_regress, n_alpha)
     else:
-        print("This test is not available atm")
-        SystemExit(0)
+        raise ValueError("this test is unavailable at the moment")
 
     
 
 def checkStatADFKPSS (df_DataSeries, s_ARParam, n_alpha):
 
-    if not adfWrapper(df_DataSeries, s_ARParam, n_alpha) and kpssWrapper(df_DataSeries, s_ARParam, n_alpha):
+    adfRes = adfWrapper(df_DataSeries, s_ARParam, n_alpha)
+    kpssResult = kpssWrapper(df_DataSeries, s_ARParam, n_alpha)
+
+    if not adfRes and kpssResult:
         return 0 #stationary
-    elif adfWrapper(df_DataSeries, s_ARParam, n_alpha) and not kpssWrapper(df_DataSeries, s_ARParam, n_alpha):
+    elif adfRes and not kpssResult:
         return 1 #non-stationary
-    elif not adfWrapper(df_DataSeries, s_ARParam, n_alpha) and not kpssWrapper(df_DataSeries, s_ARParam, n_alpha):
+    elif not adfRes and not kpssResult:
         return -1 #inconclusive 
         # adfWrapper = reject(false)/failure to reject(true)
         # kpssWrapper = reject(false)/failure to reject(true)
@@ -27,7 +29,7 @@ def checkStatADFKPSS (df_DataSeries, s_ARParam, n_alpha):
 def adfWrapper(df_DataSeries, s_ARParam, n_alpha):
 
     t_adf = adf(df_DataSeries, regression =s_ARParam, autolag="AIC") #get the test statistic and critical value
-    print(t_adf)
+    # print(t_adf)
     n_adf_stat= t_adf[0]
     n_adf_crit = t_adf[4][n_alpha]
     bNullHypo = True #set true as the test expects a non stationary time series
@@ -40,7 +42,7 @@ def adfWrapper(df_DataSeries, s_ARParam, n_alpha):
 def kpssWrapper(df_DataSeries, s_ARParam, n_alpha):
         
     t_kpss = kpss(df_DataSeries, regression=s_ARParam)
-    print(t_kpss)
+    # print(t_kpss)
     n_kpss_stat = t_kpss[0]
     n_kpss_crit = t_kpss[3][n_alpha]
     bNullHypo = True
