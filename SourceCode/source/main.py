@@ -10,6 +10,7 @@ from pathlib import Path
 from coreforecast.scalers import boxcox, inv_boxcox, boxcox_lambda
 import matplotlib.pyplot as plt
 import statsmodels.tsa.seasonal as STL
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
 # read the given data sets
 script_dir = Path(__file__).parent
@@ -36,12 +37,10 @@ plt.plot(df_train_3mm_edited["Transformed"], alpha=0.7)
 
 # plt.show()
 
-
 #STL implement. Get Graph and especially trend
 
-stl_3mm_edited = STL.STL(df_train_3mm_edited["Transformed"], period=6, seasonal=39)
+stl_3mm_edited = STL.STL(df_train_3mm_edited["Transformed"], period=38, seasonal=7)
 stl_fitted = stl_3mm_edited.fit()
-
 
 fig,axes = plt.subplots(4 , 1 ,figsize=(10,6), sharex=True)
 
@@ -74,7 +73,7 @@ else:
     bTrending = False
 # print(bTrending)
 # Stationary checks; if trend then constant and trend, otherwise constant
-
+b_Difference = False
 if bTrending:
     nStationary = statutil.getStationary(df_train_3mm_edited["Transformed"], "ct", "5%", "ADF")
     # as in the trend case, the series is already expected to be stationary, adf here should just decide upon if it is RWWD (H_0) or DT (H_0 rejected)
@@ -83,20 +82,30 @@ if bTrending:
         print("detrend") # detrend before going further
     elif nStationary == 1:
         #if differenced just do so when implementing ARIMA
+        b_Difference = True
         print("difference")
     elif nStationary == -1:
         print(nStationary) #no idea yet
 
 else:
+    # as there is no trend a rejeted H_0 means that a series is already stationary
+    nStationary = statutil.getStationary(df_train_3mm_edited["Transformed"], "c", "5%", "ADF")
+    if nStationary == 0:
+        print("do nothing") # its stationary
+    elif nStationary == 1:
+        #if differenced just do so when implementing ARIMA
+        b_Difference = True
+        print("difference")
+    elif nStationary == -1:
+        print(nStationary) #no idea yet
 
-    
-    print("implement for c and n") 
 
+# plt.show()
+# print(df_train_3mm_edited["Transformed"].diff())
+# ok take what has been learned about the stationarity and build a ACF/PACF module to determine which lag is optimal; return a tupel for p and q, d is already set thrugh bDifference
+# plot in the run code, get the results with the module, 
+plot_acf(df_train_3mm_edited["Transformed"].diff().dropna(), lags=38)
+plot_acf(df_train_3mm_edited["Transformed"], lags=38)
+plot_pacf(df_train_3mm_edited["Transformed"].diff().dropna(), lags=38)
+# plt.show()
 
-# if stlu.getStationary(bTrending, df_train_3mm_edited["Transformed"]): put in ct otherwise c or in extreme cases with zero mean n, type of test
-#     bStationary = True
-
-# trend, difference, stationary
-# else:
-#     bStationay = False
-# print(bStationay)
