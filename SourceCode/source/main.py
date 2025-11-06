@@ -75,13 +75,23 @@ else:
 # print(bTrending)
 # Stationary checks; if trend then constant and trend, otherwise constant, schwart for lags and implment AIC for making it more precise
 
+if bTrending:
+    nStationary = stlu.getStationary(df_train_3mm_edited["Transformed"], "ct", "5%", "ADF")
+    # as in the trend case, the series is already expected to be stationary, adf here should just decide upon if it is RWWD (H_0) or DT (H_0 rejected)
+    # ergo if the series should be detrended or differenced; this might be a bit confusing when looking at the implementation and the var names
+    if nStationary == 0:
+        print("detrend") # detrend before going further
+    elif nStationary == 1:
+        #if differenced just do so when implementing ARIMA
+        print("difference")
+    elif nStationary == -1:
+        print(nStationary) #no idea yet
 
-print(statutil.getStationary(bTrending, df_train_3mm_edited["Transformed"]))
 
-
-
-# if stlu.getStationary(bTrending, df_train_3mm_edited["Transformed"]):
+# if stlu.getStationary(bTrending, df_train_3mm_edited["Transformed"]): put in ct otherwise c or in extreme cases with zero mean n, type of test
 #     bStationary = True
+
+# trend, difference, stationary
 # else:
 #     bStationay = False
 # print(bStationay)
