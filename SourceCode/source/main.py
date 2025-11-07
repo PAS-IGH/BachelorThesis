@@ -116,5 +116,7 @@ plot_acf(df_train_3mm_edited["Transformed"].diff().dropna(), lags=76)
 # plot_pacf(df_train_3mm_edited["Transformed"].diff().dropna(), lags=76)
 # plt.show()
 
-
-corrUtil.getARIMA_Params(df_train_3mm_edited["Transformed"], 76, 0.05, b_Detrend, b_Stationary)
+p , d, q = corrUtil.getARIMA_Params(df_train_3mm_edited["Transformed"], 76, 0.05, b_Detrend, b_Stationary)
+print(p)
+print(d)
+print(q)

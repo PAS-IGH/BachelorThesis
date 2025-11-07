@@ -1,6 +1,7 @@
 from statsmodels.graphics.tsaplots import acf, pacf
 import numpy as np
 import pandas as pd
+import math
 # implement ACF and PACF. The return of the highest function within should be the params for ARIMA later
 #check decay rate first, then the significant lags after the first cutoff to diagnose data
 # also a figure for plotting is needed or that will be put in front depending on the output 
@@ -29,7 +30,8 @@ def getARIMA_Params (df_data_series, n_lags, n_alpha, bTrend, bStationary):
         n_param_d = getDiffParam(getDecayRate(t_corr_val_acf, t_conf_int_acf), getDecayRate(t_corr_val_pacf, t_conf_int_pacf)) # 2 is the limit to avoid overdifferencing
         if n_param_d == 2:
             print("diff again")
-        print(getARMA_Param(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf, t_conf_int_pacf ))
+        p, q = getARMA_Param(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf, t_conf_int_pacf)
+        return p, n_param_d , q
 
     elif bTrend and not bStationary:
         print()
@@ -52,8 +54,81 @@ def getARMA_Param (t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf,  t_conf_int_
 # get the minimum cutoff threshold deciding on AR or MA as shown by Reed
 #  remember that for case 4 and 5 there is remark 
 # on how to choose which model
-    bAR = True #if false then MA for the cases in chooseModel()
-    print(calcTresholds(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf,  t_conf_int_pacf))
+     #if false then MA for the cases in chooseModel()
+    # print(calcTresholds(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf,  t_conf_int_pacf))
+    return get_q_p(getMinLagThresholds(calcTresholds(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf,  t_conf_int_pacf)))
+
+
+def get_q_p (df_minLag) :
+    #based on Tran and Reed table
+    if df_minLag["Plot_Type"][0] == "ACF":
+        b_AR = False
+    elif df_minLag["Plot_Type"][0] == "PACF":
+        b_AR = True
+
+    n_lag1_val = df_minLag.loc[df_minLag["Lag"] == 1, "Cut_T_Value"].iloc[0]
+    n_lag1_val_rounded = math.floor(n_lag1_val) # always rounded down as said by Tran and Reed. Keep the original values for special cases 4 and 5
+    n_lag2_val = df_minLag.loc[df_minLag["Lag"] == 2, "Cut_T_Value"].iloc[0]
+    n_lag2_val_rounded= math.floor(n_lag2_val)
+    print(f"lag 1: {n_lag1_val} lag 2:{n_lag2_val}")
+
+    #return format p,q;ergo AR,MA
+    #case 0
+    if n_lag2_val_rounded == 0 and n_lag1_val_rounded == 0: 
+        return 0 , 0
+    elif (
+        (n_lag2_val_rounded == 0 and n_lag1_val_rounded == 1) or #case 1
+        (n_lag2_val_rounded == 0 and n_lag1_val_rounded > 1) or #case 2
+        (n_lag2_val_rounded == 1 and n_lag1_val_rounded == 0) or #case 3
+        (n_lag2_val_rounded > 1 and n_lag1_val_rounded == 0) or #case 6
+        (n_lag2_val_rounded > 1 and n_lag1_val_rounded == 1) #case 7
+    ):
+        if b_AR:
+            return 1 , 0
+        else:
+            return 0 , 1
+     #special case 4; see Tran and Reed for detailed info
+    elif n_lag2_val_rounded == 1 and n_lag1_val_rounded == 1:
+        if n_lag1_val < n_lag2_val:
+            if b_AR:
+                return 1 , 0
+            else:
+                return 0 , 1
+        elif n_lag1_val > n_lag2_val and n_lag2_val > 1.5: 
+            if b_AR:
+                return 2 , 0
+            else:
+                return 0 , 2
+        else:
+            if b_AR:
+                return 1 , 0
+            else:
+                return 0 , 1
+    #special case 5; see Tran and Reed for detailed info
+    elif n_lag2_val_rounded == 1 and n_lag1_val_rounded > 1:              
+        if n_lag1_val > n_lag2_val and n_lag2_val > 1.5:
+            if b_AR:
+                return 2 , 0
+            else:
+                return 0 , 2
+        else:
+            if b_AR:
+                return 1 , 0
+            else:
+                return 0 , 1
+    # case 8 ARMA case
+    elif n_lag2_val_rounded > 1 and n_lag1_val_rounded > 1: 
+        return 1,1
+
+
+
+def getMinLagThresholds(df_thresholds):
+
+    n_min_row = df_thresholds.loc[df_thresholds["Cut_T_Value"].idxmin()] #gets the row with the minimum cutoff threshold
+    s_plot_type = n_min_row["Plot_Type"]
+    df_filtered_lags = df_thresholds[df_thresholds["Plot_Type"] == s_plot_type]
+    print(df_filtered_lags)
+    return df_filtered_lags
 
 def calcTresholds(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf,  t_conf_int_pacf): 
     a_cutoff_T = []
@@ -121,6 +196,3 @@ def getLagBefCutoff(t_corr_val,t_conf_int):
             return k -1 
     
     return len(t_corr_val) - 1
-
-
-# getLagBefCutoff -> decay rate -> 
