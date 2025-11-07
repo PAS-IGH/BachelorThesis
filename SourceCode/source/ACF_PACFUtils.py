@@ -1,7 +1,12 @@
+from statsmodels.graphics.tsaplots import acf, pacf
+
+
 # implement ACF and PACF. The return of the highest function within should be the params for ARIMA later
 #check decay rate first, then the significant lags after the first cutoff to diagnose data
 # also a figure for plotting is needed or that will be put in front depending on the output 
-# of the decay rate
+# of the decay rate. Ignore decay rate if it has been detrended. Detrending again makes no sense
+# sanity check the implementation by checking its d parameter with the plotted graph as well as p and q
+# based on how you would choose it, this may lead to relaxing th 0.1 boundary for the decay rate a bit
 
 #What params do we need?
 # p if AR(p)
@@ -15,27 +20,70 @@
 # this also decided on d
 #Thus: first decay and differencing parameter, then p and q
 
-# getARIMA_Params (df_data_series) 
-# Parameter d gives back d and the
-# returns a dictionary with the values for p, d, q
+def getARIMA_Params (df_data_series, n_lags, n_alpha, bTrend, bStationary): 
+    if not bTrend and not bStationary: 
+        #init check
+        df_data_series_diffed = df_data_series.diff().dropna()
+        t_corr_val_acf, t_conf_int_acf = acf(df_data_series_diffed, nlags=n_lags, alpha=n_alpha)
+        t_corr_val_pacf, t_conf_int_pacf = pacf(df_data_series_diffed, nlags=n_lags, alpha=n_alpha)
+        n_param_d = getDiffParam(getDecayRate(t_corr_val_acf, t_conf_int_acf), getDecayRate(t_corr_val_pacf, t_conf_int_pacf)) # 2 is the limit to avoid overdifferencing
+        print()
+    elif bTrend and not bStationary:
+        print()
+        #get params only, decay rate not needed as detrending took care if it
+        #if for some reason the decay would still be high, then the tests beforehand did something wrong
+    elif not bTrend and bStationary:
+        print()
+        # well decay can be skipped as well du to it already being stationary
 
-# acfWrapper(df_data_series)
-# return UCI_i for all lags, the values for the lags so it can be used for the decay rate
+def getDiffParam(n_decay_acf , n_decay_pacf):
+    n_param_d = 1 #if a diff param is needed on order of differencing is needed anyway
+    if n_decay_acf < 0.1 and n_decay_pacf < 0.1:
+        n_param_d_2 = 2
+        return n_param_d_2
+    else: 
+        return n_param_d
 
-# pacfWrapper(df_data_series)
-# return UCI_i for all lags, the values for the lags so it can be used for the decay rate
+def getARMAParam (df_differenced, ):
 
-# Parameter d (bTrend, )
-# Get decay rate something which needs to be kept in mind is that ADF/KPSS already gave an indication for 
-# differencing/detrending. Therefore implement and test with undifferenced first to see if the decay rate can recognize it
-# look at graph of ACF and PACF before and after for pointers
-# while decayRate > 0 and decayRate < 0.1 keep differencing and count how often it was differenced that is d, this differenced 
-# time series is then acf() to get the UCI for the p and q function
-
-# Parameter p and q ()
+# Parameter p and q (df_differenced)
 # get the minimum cutoff threshold deciding on AR or MA 
 # Take the able and just implement the if elif, remember that for case 4 and 5 there is remark 
 # on how to choose which model 
 
-# getLagBefCutoff()
-# Get parameter M for decay by checking which lag is the last before it dips below the band
+def getDecayRate(t_corr_val,t_conf_int):
+    # cutoff rate as shown by Tran and Reed 
+    n_cutoff = getLagBefCutoff(t_corr_val,t_conf_int)
+    a_acf = t_corr_val
+    n_sum_rate_of_change = 0
+
+    for k in range (0, n_cutoff):
+        nominator = abs(a_acf[k]) - abs(a_acf[k + 1])
+        denominator = abs(a_acf[k])
+        n_ratio = nominator / denominator
+        n_sum_rate_of_change = n_sum_rate_of_change + n_ratio
+
+    return n_sum_rate_of_change / n_cutoff
+
+def getLagBefCutoff(t_corr_val,t_conf_int): 
+    # Get parameter M for decay by checking which lag is the last before it dips below the band
+    # should be usable for both ACF and PACF
+    # Returns M
+    # print(t_corr_val)
+    # print(t_conf_int)
+
+    # Get the index upper band (margin of error) value by UCI - r_k (value at lag k)
+    #   check with abs(r_k) <= margin_of_error
+
+    for k in range(1, len(t_corr_val)): #start at index 1, 0 would make no sense as a value is always autocorrelated with itself
+        n_r_k = t_corr_val[k] #autocorrelation at lag k
+        n_uci_k = t_conf_int[k][1] #gets upper confidence interval
+
+        n_margin_err = n_uci_k - n_r_k
+        if abs(n_r_k) <= n_margin_err:
+            return k -1 
+    
+    return len(t_corr_val) - 1
+
+
+# getLagBefCutoff -> decay rate -> 

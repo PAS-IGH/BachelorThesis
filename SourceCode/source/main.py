@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from . import UtilsDataFrame as udf
 from . import STLUtils as stlu
 from . import StationaryUtils as statutil
+from . import ACF_PACFUtils as corrUtil
 from pathlib import Path
 from coreforecast.scalers import boxcox, inv_boxcox, boxcox_lambda
 import matplotlib.pyplot as plt
@@ -74,11 +75,15 @@ else:
 # print(bTrending)
 # Stationary checks; if trend then constant and trend, otherwise constant
 b_Difference = False
+b_Detrend = False
+b_Stationary = False
+
 if bTrending:
-    nStationary = statutil.getStationary(df_train_3mm_edited["Transformed"], "ct", "5%", "ADF")
+    nStationary = statutil.getStationary(df_train_3mm_edited["Transformed"], "ct", 0.05, "ADF")
     # as in the trend case, the series is already expected to be stationary, adf here should just decide upon if it is RWWD (H_0) or DT (H_0 rejected)
     # ergo if the series should be detrended or differenced; this might be a bit confusing when looking at the implementation and the var names
     if nStationary == 0:
+        b_Detrend = True
         print("detrend") # detrend before going further
     elif nStationary == 1:
         #if differenced just do so when implementing ARIMA
@@ -89,8 +94,9 @@ if bTrending:
 
 else:
     # as there is no trend a rejeted H_0 means that a series is already stationary
-    nStationary = statutil.getStationary(df_train_3mm_edited["Transformed"], "c", "5%", "ADF")
+    nStationary = statutil.getStationary(df_train_3mm_edited["Transformed"], "c", 0.05, "ADF")
     if nStationary == 0:
+        b_Stationary = True
         print("do nothing") # its stationary
     elif nStationary == 1:
         #if differenced just do so when implementing ARIMA
@@ -104,8 +110,11 @@ else:
 # print(df_train_3mm_edited["Transformed"].diff())
 # ok take what has been learned about the stationarity and build a ACF/PACF module to determine which lag is optimal; return a tupel for p and q, d is already set thrugh bDifference
 # plot in the run code, get the results with the module, 
-plot_acf(df_train_3mm_edited["Transformed"].diff().dropna(), lags=38)
-plot_acf(df_train_3mm_edited["Transformed"], lags=38)
-plot_pacf(df_train_3mm_edited["Transformed"].diff().dropna(), lags=38)
+# plot_acf(df_train_3mm_edited["Transformed"].diff().dropna(), lags=76)
+# plot_acf(df_train_3mm_edited["Transformed"], lags=76)
+# plot_pacf(df_train_3mm_edited["Transformed"], lags=76)
+# plot_pacf(df_train_3mm_edited["Transformed"].diff().dropna(), lags=76)
 # plt.show()
 
+print("non differenced")
+corrUtil.getARIMA_Params(df_train_3mm_edited["Transformed"], 76, 0.05, b_Detrend, b_Stationary)

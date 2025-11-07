@@ -2,7 +2,7 @@ import pandas as pd
 from statsmodels.tsa.stattools import adfuller as adf
 from statsmodels.tsa.stattools import kpss
 
-def getStationary(df_DataSeries, s_regress, s_alpha, s_test_type):
+def getStationary(df_DataSeries, s_regress, n_alpha, s_test_type):
     """
     Tells if a series is stationary or not with a given test and alpha value
     This function performs the following operations:
@@ -19,8 +19,10 @@ def getStationary(df_DataSeries, s_regress, s_alpha, s_test_type):
         * 1 : non stationary
         * -1: inconcusive
     """
+    trFloatingAlphaToString(n_alpha)
+
     if s_test_type == "ADF":
-        return checkStatADFKPSS(df_DataSeries, s_regress, s_alpha)
+        return checkStatADFKPSS(df_DataSeries, s_regress, trFloatingAlphaToString(n_alpha))
     else:
         raise ValueError("this test is unavailable at the moment")
 
@@ -111,3 +113,11 @@ def kpssWrapper(df_DataSeries, s_ARParam, s_alpha):
         return not bNullHypo #inverted to adf, h_0 rejected if t-value is higher than critical
     elif n_kpss_stat < n_kpss_crit:
         return bNullHypo
+    
+def trFloatingAlphaToString(n_alpha): 
+
+    """
+    doce will be added later
+    """
+    n_percent = int(n_alpha * 100)
+    return f"{n_percent}%"
