@@ -110,11 +110,11 @@ else:
 # print(df_train_3mm_edited["Transformed"].diff())
 # ok take what has been learned about the stationarity and build a ACF/PACF module to determine which lag is optimal; return a tupel for p and q, d is already set thrugh bDifference
 # plot in the run code, get the results with the module, 
-# plot_acf(df_train_3mm_edited["Transformed"].diff().dropna(), lags=76)
+plot_acf(df_train_3mm_edited["Transformed"].diff().dropna(), lags=76)
 # plot_acf(df_train_3mm_edited["Transformed"], lags=76)
 # plot_pacf(df_train_3mm_edited["Transformed"], lags=76)
 # plot_pacf(df_train_3mm_edited["Transformed"].diff().dropna(), lags=76)
 # plt.show()
 
-print("non differenced")
+
 corrUtil.getARIMA_Params(df_train_3mm_edited["Transformed"], 76, 0.05, b_Detrend, b_Stationary)

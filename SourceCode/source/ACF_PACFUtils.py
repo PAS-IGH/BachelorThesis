@@ -1,6 +1,6 @@
 from statsmodels.graphics.tsaplots import acf, pacf
-
-
+import numpy as np
+import pandas as pd
 # implement ACF and PACF. The return of the highest function within should be the params for ARIMA later
 #check decay rate first, then the significant lags after the first cutoff to diagnose data
 # also a figure for plotting is needed or that will be put in front depending on the output 
@@ -27,7 +27,10 @@ def getARIMA_Params (df_data_series, n_lags, n_alpha, bTrend, bStationary):
         t_corr_val_acf, t_conf_int_acf = acf(df_data_series_diffed, nlags=n_lags, alpha=n_alpha)
         t_corr_val_pacf, t_conf_int_pacf = pacf(df_data_series_diffed, nlags=n_lags, alpha=n_alpha)
         n_param_d = getDiffParam(getDecayRate(t_corr_val_acf, t_conf_int_acf), getDecayRate(t_corr_val_pacf, t_conf_int_pacf)) # 2 is the limit to avoid overdifferencing
-        print()
+        if n_param_d == 2:
+            print("diff again")
+        print(getARMA_Param(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf, t_conf_int_pacf ))
+
     elif bTrend and not bStationary:
         print()
         #get params only, decay rate not needed as detrending took care if it
@@ -44,12 +47,46 @@ def getDiffParam(n_decay_acf , n_decay_pacf):
     else: 
         return n_param_d
 
-def getARMAParam (df_differenced, ):
-
+def getARMA_Param (t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf,  t_conf_int_pacf):
 # Parameter p and q (df_differenced)
-# get the minimum cutoff threshold deciding on AR or MA 
-# Take the able and just implement the if elif, remember that for case 4 and 5 there is remark 
-# on how to choose which model 
+# get the minimum cutoff threshold deciding on AR or MA as shown by Reed
+#  remember that for case 4 and 5 there is remark 
+# on how to choose which model
+    bAR = True #if false then MA for the cases in chooseModel()
+    print(calcTresholds(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf,  t_conf_int_pacf))
+
+def calcTresholds(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf,  t_conf_int_pacf): 
+    a_cutoff_T = []
+    # print(t_corr_val_acf)
+    # print(t_conf_int_acf)
+
+    for k in range (1 , 3):
+        # ACF part
+        n_upper_band_acf = t_conf_int_acf[k][1] - t_corr_val_acf[k] #get the proper upper limit band
+        if t_corr_val_acf[k] == 0 or n_upper_band_acf <= 0:
+            n_cut_T_acf = np.inf #to avoid undefined values through math problems
+        else: 
+            n_cut_T_acf = np.log(n_upper_band_acf) / np.log(abs(t_corr_val_acf[k])) #cutoff threshhold formula by Reed and Tran
+
+        a_cutoff_T.append({
+            "Plot_Type": "ACF",
+            "Lag": k,
+            "Cut_T_Value": n_cut_T_acf
+        })
+
+        #PACF part
+        n_upper_band_pacf = t_conf_int_pacf[k][1] - t_corr_val_pacf[k] #get the proper upper limit band
+        if t_corr_val_pacf[k] == 0 or n_upper_band_pacf <= 0:
+            n_cut_T_pacf = np.inf
+        else:
+            n_cut_T_pacf = np.log(n_upper_band_pacf) / np.log(abs(t_corr_val_pacf[k]))
+
+        a_cutoff_T.append({
+            "Plot_Type": "PACF",
+            "Lag": k,
+            "Cut_T_Value": n_cut_T_pacf
+        })
+    return pd.DataFrame(a_cutoff_T)
 
 def getDecayRate(t_corr_val,t_conf_int):
     # cutoff rate as shown by Tran and Reed 
