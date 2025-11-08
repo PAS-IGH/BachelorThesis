@@ -125,12 +125,17 @@ p, d, q = corrUtil.getARIMA_Params(df_train_3mm_edited["Transformed"], 76, 0.05,
 # print(q)
 
 # model = ARIMA(df_train_3mm_edited["Transformed"], order=(p , d , 2))
+
 model_fit = arimaUtil.getOptimalModel(df_train_3mm_edited["Transformed"], p, d, q) 
 print(model_fit.summary())
+#forecast into leng(testSet), transform with inverse boxcox before with the lambda computed above
 pred_forecast = model_fit.forecast(steps=len(df_test_3mm_edited["Torque"]))
 pred_forecast = inv_boxcox(pred_forecast, opt_lambda_3mm_NoDmg)
-
+#MAE: to show how good the model performs
 print(pred_forecast)
 mae = mean_absolute_error(df_test_3mm_edited["Torque"], pred_forecast)
 print(mae)
 #Outlier Detector, MAD and training it inv_boxcox opt_lambda_3mm_NoDmg
+#Outlier detector impl
+    # Get the model and the ratio for outlier with MAD_model MAD_damaged
+    # Simulate with datasets
