@@ -117,7 +117,13 @@ def kpssWrapper(df_DataSeries, s_ARParam, s_alpha):
 def trFloatingAlphaToString(n_alpha): 
 
     """
-    doce will be added later
+    Turns a numerical alpha into a string in order to use the tests
+    This function performs the following operations:
+        1. Takes a floating point alpha value and turns it into <number>% string
+    Args:
+        n_alpha(nr): A floating point alpha value
+    Returns
+        A alpha value string
     """
     n_percent = int(n_alpha * 100)
     return f"{n_percent}%"

@@ -9,11 +9,6 @@ import math
 # sanity check the implementation by checking its d parameter with the plotted graph as well as p and q
 # based on how you would choose it, this may lead to relaxing th 0.1 boundary for the decay rate a bit
 
-#What params do we need?
-# p if AR(p)
-# q if MA(q)
-# d if differencing is needed 
-
 #How to get the params?
 # p and q: implement tran and reeds idea with cutoff threshold and decide upon the right params
 # for this to work we need a stationary time series, thus th decay rate as proposed by tran and reed 
@@ -21,7 +16,13 @@ import math
 # this also decided on d
 #Thus: first decay and differencing parameter, then p and q
 
-def getARIMA_Params (df_data_series, n_lags, n_alpha, bTrend, bStationary): 
+def getARIMA_Params (df_data_series, n_lags, n_alpha, bTrend, bStationary):
+
+    """
+    Returns the parameter needed for performing ARIMA operations
+    This function 
+    """
+
     if not bTrend and not bStationary: 
         #init check
         df_data_series_diffed = df_data_series.diff().dropna()
@@ -36,6 +37,10 @@ def getARIMA_Params (df_data_series, n_lags, n_alpha, bTrend, bStationary):
     elif bTrend and not bStationary:
         print()
         #get params only, decay rate not needed as detrending took care if it
+        n_param_d = 0
+        df_data_series_detrended = df_data_series
+        t_corr_val_acf, t_conf_int_acf = acf(df_data_series, nlags=n_lags, alpha=n_alpha)
+        t_corr_val_pacf, t_conf_int_pacf = pacf(df_data_series, nlags=n_lags, alpha=n_alpha)
         #if for some reason the decay would still be high, then the tests beforehand did something wrong
     elif not bTrend and bStationary:
         print()

@@ -7,11 +7,14 @@ from . import UtilsDataFrame as udf
 from . import STLUtils as stlu
 from . import StationaryUtils as statutil
 from . import ACF_PACFUtils as corrUtil
+from . import ARIMAUtils as arimaUtil
 from pathlib import Path
 from coreforecast.scalers import boxcox, inv_boxcox, boxcox_lambda
 import matplotlib.pyplot as plt
 import statsmodels.tsa.seasonal as STL
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+from statsmodels.tsa.arima.model import ARIMA
+from sklearn.metrics import mean_absolute_error
 
 # read the given data sets
 script_dir = Path(__file__).parent
@@ -116,7 +119,18 @@ plot_acf(df_train_3mm_edited["Transformed"].diff().dropna(), lags=76)
 # plot_pacf(df_train_3mm_edited["Transformed"].diff().dropna(), lags=76)
 # plt.show()
 
-p , d, q = corrUtil.getARIMA_Params(df_train_3mm_edited["Transformed"], 76, 0.05, b_Detrend, b_Stationary)
-print(p)
-print(d)
-print(q)
+p, d, q = corrUtil.getARIMA_Params(df_train_3mm_edited["Transformed"], 76, 0.05, b_Detrend, b_Stationary)
+# print(p)
+# print(d)
+# print(q)
+
+# model = ARIMA(df_train_3mm_edited["Transformed"], order=(p , d , 2))
+model_fit = arimaUtil.getOptimalModel(df_train_3mm_edited["Transformed"], p, d, q) 
+print(model_fit.summary())
+pred_forecast = model_fit.forecast(steps=len(df_test_3mm_edited["Torque"]))
+pred_forecast = inv_boxcox(pred_forecast, opt_lambda_3mm_NoDmg)
+
+print(pred_forecast)
+mae = mean_absolute_error(df_test_3mm_edited["Torque"], pred_forecast)
+print(mae)
+#Outlier Detector, MAD and training it inv_boxcox opt_lambda_3mm_NoDmg
