@@ -1,5 +1,6 @@
 
 from statsmodels.tsa.arima.model import ARIMA, ARIMAResults
+from coreforecast.scalers import inv_boxcox
 # def getForecast(inverseBoxCoxLmabda fitted model)
 def getOptimalModel(df_series, p, d, q):
     """
@@ -151,3 +152,29 @@ def fitARIMA(df_series,p, d, q):
         else:
             best_model = min(good_models, key=lambda x: x["aic"])
             return best_model
+
+def getForecast(ARIMAResults_fitted,fore_length, n_lambda = None):
+    #get a clean forecast for the specified length
+    #if it has a lambda then use inv boxcox otherwise just forecast
+
+    """
+    Generates a forecast with a given length and detransforms the data if necessary
+    This method performs the following operations:
+        1. Takes the fitted model and forecasts up to a given length
+        2. Applies inverse boxcox if necessary
+
+    Args:
+        ARIMAResults_fitted (statsmodels.tsa.arima.model.ARIMAResults): A fitted ARIMA model
+        fore_length(int): The length of the forecast
+        n_lambda(float): A floating point to detransform a foregone transformation of the data
+    Returns:
+        An array containing the forecast for fore_length steps
+
+    """
+
+    if n_lambda:
+
+        pred_forecast = ARIMAResults_fitted.forecast(steps=fore_length)
+        return inv_boxcox(pred_forecast, n_lambda)
+    else:
+        return ARIMAResults_fitted.forecast(steps=fore_length)

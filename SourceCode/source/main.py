@@ -8,21 +8,28 @@ from . import STLUtils as stlu
 from . import StationaryUtils as statutil
 from . import ACF_PACFUtils as corrUtil
 from . import ARIMAUtils as arimaUtil
+from . import OutlierDetectorUtil as detUtil
 from pathlib import Path
 from coreforecast.scalers import boxcox, inv_boxcox, boxcox_lambda
 import matplotlib.pyplot as plt
 import statsmodels.tsa.seasonal as STL
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.robust.scale import mad
 from sklearn.metrics import mean_absolute_error
 
-# read the given data sets
+# read the given data sets this is part of the main
 script_dir = Path(__file__).parent
 
 file_path_3mm_noDMG_edited = script_dir.parent / "testData" /"3mm"/"3mm_NoDMG_20092025_edited.csv" #that should also be in createTimeSeriesDataFrame, the read csv file should always be turned into a dataframe 
+file_path_3mm_DMG_edited =  script_dir.parent / "testData" / "3mm" / "3mm_DMG_20092025_edited.csv" 
+
+# Everything at this point needs to go into its seperate thing
 #torque data needs to be put into absolute values due to the machine giving inverted data
 df_train_3mm_edited = udf.getTrainSet(pd.read_csv(file_path_3mm_noDMG_edited), "Zaehler", "Torque_ax8", "Torque", True).abs()
 df_test_3mm_edited = udf.getTestSet(pd.read_csv(file_path_3mm_noDMG_edited),"Zaehler", "Torque_ax8", "Torque", True).abs()
+df_train_dmg_3mm_edited = udf.getTrainSet(pd.read_csv(file_path_3mm_DMG_edited), "Zaehler", "Torque_ax8", "Torque", True).abs()
+df_test_dmg_3mm_edited = udf.getTestSet(pd.read_csv(file_path_3mm_DMG_edited), "Zaehler", "Torque_ax8", "Torque", True).abs()
 
 # print(df_train_3mm_edited) #sanity checks
 # print(df_test_3mm_edited) #sanity checks
@@ -127,15 +134,57 @@ p, d, q = corrUtil.getARIMA_Params(df_train_3mm_edited["Transformed"], 76, 0.05,
 # model = ARIMA(df_train_3mm_edited["Transformed"], order=(p , d , 2))
 
 model_fit = arimaUtil.getOptimalModel(df_train_3mm_edited["Transformed"], p, d, q) 
-print(model_fit.summary())
+print(model_fit.summary()) #diagnostic with hetereoscedesticity. plot it maybe and jarque bera
 #forecast into leng(testSet), transform with inverse boxcox before with the lambda computed above
-pred_forecast = model_fit.forecast(steps=len(df_test_3mm_edited["Torque"]))
-pred_forecast = inv_boxcox(pred_forecast, opt_lambda_3mm_NoDmg)
+
+pred_forecast = arimaUtil.getForecast(model_fit, len(df_test_3mm_edited["Torque"]), opt_lambda_3mm_NoDmg)
+pred_forecast_for_dmg_train = arimaUtil.getForecast(model_fit, len(df_train_dmg_3mm_edited["Torque"]), opt_lambda_3mm_NoDmg)
+pred_forecast_for_dmg_test = arimaUtil.getForecast(model_fit, len(df_test_dmg_3mm_edited["Torque"]), opt_lambda_3mm_NoDmg)
 #MAE: to show how good the model performs
-print(pred_forecast)
-mae = mean_absolute_error(df_test_3mm_edited["Torque"], pred_forecast)
-print(mae)
+# print(pred_forecast)
+# print(pred_forecast_for_dmg_train)
+# mae = mean_absolute_error(df_test_3mm_edited["Torque"], pred_forecast)
+# print(mae)
+# mae_2 = mean_absolute_error(df_train_dmg_3mm_edited["Torque"], pred_forecast_for_dmg)
+# print(mae_2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #Outlier Detector, MAD and training it inv_boxcox opt_lambda_3mm_NoDmg
 #Outlier detector impl
     # Get the model and the ratio for outlier with MAD_model MAD_damaged
     # Simulate with datasets
+
+# n_error = df_train_dmg_3mm_edited["Torque"] - pred_forecast_for_dmg
+# med = np.median(n_error)
+# mad = mad(n_error, c=1.0)
+# n_z_score = np.abs(n_error - med) / mad
+# print(n_z_score.max())
+# print(n_z_score.idxmax())
+n_max_score = detUtil.getAnomalyThreshold(df_train_dmg_3mm_edited["Torque"], pred_forecast_for_dmg_train)
+print(f"this {n_max_score} max")
+
+# Simulate to show how the anomaly detection works
+# print(pred_forecast_for_dmg_test)
+# print(df_test_dmg_3mm_edited["Torque"])
+# n_outlier_percent = detUtil.detectOutlier(pred_forecast_for_dmg_test, df_test_dmg_3mm_edited["Torque"], n_max_score)
+n_outlier_percent = detUtil.detectOutlier(pred_forecast, df_test_3mm_edited["Torque"], n_max_score)
+
+print(f"{n_outlier_percent} % detected")  # give back the percentage of anomalies detected in the given data based on the forecast of a fitted model and the computed anomaly threshhold 
