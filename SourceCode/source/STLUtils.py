@@ -28,29 +28,17 @@ def getTrendStrength(df_stl_trend, df_stl_residual):
 
     return max(0 , n_trend_strength)
 
-# def plotSTL(stlFit, bObserved, bTrend, bSeasonal, bResidual): 
+def getTrending (df_stl_trend, df_stl_residual, dict_results): 
+# Returns a bool indicating a trend
+    n_trend_strength = getTrendStrength(df_stl_trend, df_stl_residual)
 
-#     if not stlFit:
-#         print("no stl fit given")
-
-#     if bObserved and bTrend and bSeasonal and bResidual:
-#         fig,axes = plt.subplots(4 , 1 ,figsize=(10,6), sharex=True)
-
-#         axes[0].plot(df_train_3mm_edited.index, stl_fitted.observed, color="black")
-#         axes[0].set_xlabel("Torque in nm transformed")
-#         axes[0].set_ylabel("Torque[nM]")
-
-#         axes[1].plot(df_train_3mm_edited.index, stl_fitted.trend, color="green")
-#         axes[1].set_ylabel("Trend")
-
-#         axes[2].plot(df_train_3mm_edited.index, stl_fitted.seasonal, color="blue")
-#         axes[2].set_ylabel("Seasonal")
-
-#         axes[3].plot(df_train_3mm_edited.index, stl_fitted.resid, color="red")
-#         axes[3].set_ylabel("Residual")
-#         axes[3].set_xlabel("Time in working steps")
+    # === save the trend result 0============================================
+    dict_results["trend_info"] = {
+        "trend_strength": n_trend_strength
+    }
+    #========================================================================
     
-
-
-#     plt.tight_layout()
-#     plt.show()
+    if n_trend_strength >= 0.4:
+        return True
+    else:
+        return False

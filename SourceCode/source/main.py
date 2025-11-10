@@ -27,32 +27,33 @@ file_path_3mm_DMG_edited =  script_dir.parent / "testData" / "3mm" / "3mm_DMG_20
 
 # Everything at this point needs to go into its seperate thing
 #torque data needs to be put into absolute values due to the machine giving inverted data
+dict_results = {}
 
-run.run(file_path_3mm_noDMG_edited, file_path_3mm_DMG_edited, "Torque_ax8", "Torque", 7, bAbs= True) #nSeasons how many seasons with obs there are, to get observ per season
+run.run(file_path_3mm_noDMG_edited, file_path_3mm_DMG_edited, "Torque_ax8", "Torque", 39, bAbs= True) #nSeasons how many seasons with obs there are, to get observ per season
 # run.TimeSeriesAnalysis() #produces fitted model for a given set and plotted graphs for analysing
 # run.outlierdetection() # based on time series analysis detects outliers
 
-# df_train_3mm_edited = udf.getTrainSet(pd.read_csv(file_path_3mm_noDMG_edited), "Zaehler", "Torque_ax8", "Torque", True).abs()
-# df_test_3mm_edited = udf.getTestSet(pd.read_csv(file_path_3mm_noDMG_edited),"Zaehler", "Torque_ax8", "Torque", True).abs()
-# df_train_dmg_3mm_edited = udf.getTrainSet(pd.read_csv(file_path_3mm_DMG_edited), "Zaehler", "Torque_ax8", "Torque", True).abs()
-# df_test_dmg_3mm_edited = udf.getTestSet(pd.read_csv(file_path_3mm_DMG_edited), "Zaehler", "Torque_ax8", "Torque", True).abs()
+df_train_3mm_edited = udf.getTrainSet(pd.read_csv(file_path_3mm_noDMG_edited), "Zaehler", "Torque_ax8", "Torque", True).abs()
+df_test_3mm_edited = udf.getTestSet(pd.read_csv(file_path_3mm_noDMG_edited),"Zaehler", "Torque_ax8", "Torque", True).abs()
+df_train_dmg_3mm_edited = udf.getTrainSet(pd.read_csv(file_path_3mm_DMG_edited), "Zaehler", "Torque_ax8", "Torque", True).abs()
+df_test_dmg_3mm_edited = udf.getTestSet(pd.read_csv(file_path_3mm_DMG_edited), "Zaehler", "Torque_ax8", "Torque", True).abs()
 
-# # print(df_train_3mm_edited) #sanity checks
-# # print(df_test_3mm_edited) #sanity checks
+# print(df_train_3mm_edited) #sanity checks
+# print(df_test_3mm_edited) #sanity checks
 
-# #now onto detrending, remember get the lambda first then and save it as a global var for later detransforming after ARIMA modeling
-# # Lambda by guerrero, transform by box cox
-# opt_lambda_3mm_NoDmg = boxcox_lambda(df_train_3mm_edited["Torque"], method="guerrero", season_length=39)
-# df_train_3mm_edited["Transformed"] = boxcox(df_train_3mm_edited["Torque"], opt_lambda_3mm_NoDmg)
+#now onto detrending, remember get the lambda first then and save it as a global var for later detransforming after ARIMA modeling
+# Lambda by guerrero, transform by box cox
+opt_lambda_3mm_NoDmg = boxcox_lambda(df_train_3mm_edited["Torque"], method="guerrero", season_length=39)
+df_train_3mm_edited["Transformed"] = boxcox(df_train_3mm_edited["Torque"], opt_lambda_3mm_NoDmg)
 
 
 # print(opt_lambda_3mm_NoDmg)
-# print(df_train_3mm_edited["Transformed"])
+print(df_train_3mm_edited["Transformed"])
 plt.figure(figsize=(10,6))
 plt.plot(df_train_3mm_edited["Torque"], alpha=0.7)
 plt.plot(df_train_3mm_edited["Transformed"], alpha=0.7)
 
-plt.show()
+# plt.show()
 
 #STL implement. Get Graph and especially trend
 
@@ -95,7 +96,7 @@ b_Detrend = False
 b_Stationary = False
 
 if bTrending:
-    nStationary = statutil.getStationary(df_train_3mm_edited["Transformed"], "ct", 0.05, "ADF")
+    nStationary = statutil.getStationary(df_train_3mm_edited["Transformed"], "ct", 0.05, "ADF", dict_results)
     # as in the trend case, the series is already expected to be stationary, adf here should just decide upon if it is RWWD (H_0) or DT (H_0 rejected)
     # ergo if the series should be detrended or differenced; this might be a bit confusing when looking at the implementation and the var names
     if nStationary == 0:
@@ -126,7 +127,7 @@ else:
 # print(df_train_3mm_edited["Transformed"].diff())
 # ok take what has been learned about the stationarity and build a ACF/PACF module to determine which lag is optimal; return a tupel for p and q, d is already set thrugh bDifference
 # plot in the run code, get the results with the module, 
-plot_acf(df_train_3mm_edited["Transformed"].diff().dropna(), lags=78)
+# plot_acf(df_train_3mm_edited["Transformed"].diff().dropna(), lags=78)
 # plot_acf(df_train_3mm_edited["Transformed"], lags=76)
 # plot_pacf(df_train_3mm_edited["Transformed"], lags=76)
 # plot_pacf(df_train_3mm_edited["Transformed"].diff().dropna(), lags=76)

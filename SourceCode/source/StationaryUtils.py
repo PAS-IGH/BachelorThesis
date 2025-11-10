@@ -2,7 +2,37 @@ import pandas as pd
 from statsmodels.tsa.stattools import adfuller as adf
 from statsmodels.tsa.stattools import kpss
 
-def getStationary(df_DataSeries, s_regress, n_alpha, s_test_type):
+def getStatInd(df_DataSeries, n_alpha, s_test_type, bTrending, dict_results):
+    # n_Stationary =  getStationary(df_DataSeries, s_regress, n_alpha, s_test_type, dict_results)
+    dict_stat = {
+        "b_Difference": False,
+        "b_Detrend": False,
+        "b_Stationary": False,  
+    }
+
+    if bTrending:
+        s_regress = "ct"
+    elif not bTrending:
+        s_regress = "c"
+    
+    n_Stationary =  getStationary(df_DataSeries, s_regress, n_alpha, s_test_type, dict_results)
+
+    if n_Stationary == 0 and bTrending:
+        dict_results["stationary_status"]["stat_type"] = "trend"
+        dict_stat["b_Detrend"] = True # detrend 
+    elif n_Stationary == 0 and not bTrending:
+        dict_results["stationary_status"]["stat_type"] = "stationary"
+        dict_stat["b_Stationary"] = True #stationary
+    elif n_Stationary == 1:
+        dict_results["stationary_status"]["stat_type"] = "difference"
+        dict_stat["b_Difference"] = True #difference
+    elif n_Stationary == -1:
+        print(n_Stationary) #no idea yet
+    
+    return dict_stat
+
+
+def getStationary(df_DataSeries, s_regress, n_alpha, s_test_type, dict_results):
     """
     Tells if a series is stationary or not with a given test and alpha value
     This function performs the following operations:
@@ -22,13 +52,13 @@ def getStationary(df_DataSeries, s_regress, n_alpha, s_test_type):
     trFloatingAlphaToString(n_alpha)
 
     if s_test_type == "ADF":
-        return checkStatADFKPSS(df_DataSeries, s_regress, trFloatingAlphaToString(n_alpha))
+        return checkStatADFKPSS(df_DataSeries, s_regress, trFloatingAlphaToString(n_alpha), dict_results)
     else:
         raise ValueError("this test is unavailable at the moment")
 
     
 
-def checkStatADFKPSS (df_DataSeries, s_ARParam, s_alpha):
+def checkStatADFKPSS (df_DataSeries, s_ARParam, s_alpha, dict_results):
     """
     Provides the result of the conjoined ADF and KPSS test 
     This function performs the following operations:
@@ -45,20 +75,40 @@ def checkStatADFKPSS (df_DataSeries, s_ARParam, s_alpha):
         * 1 : non stationary
         * -1: inconcusive
     """
-    adfRes = adfWrapper(df_DataSeries, s_ARParam, s_alpha)
-    kpssResult = kpssWrapper(df_DataSeries, s_ARParam, s_alpha)
+    adfRes = adfWrapper(df_DataSeries, s_ARParam, s_alpha, dict_results)
+    kpssResult = kpssWrapper(df_DataSeries, s_ARParam, s_alpha, dict_results)
 
     if not adfRes and kpssResult:
+        # === Save results =======================
+        dict_results["stationary_status"] = {
+            "n_stat_indicator" : 0,
+            "stationary_status" : "stationary",
+            "stat_type": None
+        }
+        #=========================================
         return 0 #stationary
     elif adfRes and not kpssResult:
+        # === Save results =======================
+        dict_results["stationary_status"] = {
+            "n_stat_indicator" : 1,
+            "stationary_status" : "non-stationary",
+            "stat_type": None
+        }
+        #=========================================
         return 1 #non-stationary
     elif not adfRes and not kpssResult:
+
+        # === Save results =======================
+        dict_results["stationary_status"] = {
+            "n_stat_indicator" : -1,
+            "stationary_status" : "inconclusive",
+            "stat_type": None
+        }
+        #=========================================
         return -1 #inconclusive 
-        # adfWrapper = reject(false)/failure to reject(true)
-        # kpssWrapper = reject(false)/failure to reject(true)
 
 
-def adfWrapper(df_DataSeries, s_ARParam, s_alpha):
+def adfWrapper(df_DataSeries, s_ARParam, s_alpha, dict_results):
 
     """
     Provides the result of the ADF test
@@ -76,17 +126,24 @@ def adfWrapper(df_DataSeries, s_ARParam, s_alpha):
         * False : H_1 was rejected 
     """
     t_adf = adf(df_DataSeries, regression =s_ARParam, autolag="AIC") #get the test statistic and critical value
-    # print(t_adf)
     n_adf_stat= t_adf[0]
     n_adf_crit = t_adf[4][s_alpha]
-    bNullHypo = True #set true as the test expects a non stationary time series
+    bNullHypo = True #set true as the test expects a non stationary time 
+    
+    #=== Save results ===
+    dict_results["adf_test_statistic"] = {
+        "t_value": n_adf_stat,
+        "critical_value": n_adf_crit,
+        "null_hypo": False if n_adf_stat <= n_adf_crit else True
+    }
+    #====================
 
     if n_adf_stat <= n_adf_crit: # t-value less than critical reject
         return not bNullHypo
     elif n_adf_stat > n_adf_crit:
         return bNullHypo #t-value more than critical value fails to reject
     
-def kpssWrapper(df_DataSeries, s_ARParam, s_alpha):
+def kpssWrapper(df_DataSeries, s_ARParam, s_alpha, dict_results):
 
     """
     Provides the result of the KPSS test
@@ -104,10 +161,17 @@ def kpssWrapper(df_DataSeries, s_ARParam, s_alpha):
         * False : H_1 was rejected 
     """
     t_kpss = kpss(df_DataSeries, regression=s_ARParam)
-    # print(t_kpss)
     n_kpss_stat = t_kpss[0]
     n_kpss_crit = t_kpss[3][s_alpha]
     bNullHypo = True
+
+    #=== Save results ===
+    dict_results["kpss_test_statistic"] = {
+        "t_value": n_kpss_stat,
+        "critical_valu": n_kpss_crit, 
+        "null_hypo": False if n_kpss_stat >= n_kpss_crit else True
+    }
+    #====================
 
     if n_kpss_stat >= n_kpss_crit:
         return not bNullHypo #inverted to adf, h_0 rejected if t-value is higher than critical
