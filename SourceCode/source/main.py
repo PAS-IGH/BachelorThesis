@@ -9,6 +9,7 @@ from . import StationaryUtils as statutil
 from . import ACF_PACFUtils as corrUtil
 from . import ARIMAUtils as arimaUtil
 from . import OutlierDetectorUtil as detUtil
+from . import run as run
 from pathlib import Path
 from coreforecast.scalers import boxcox, inv_boxcox, boxcox_lambda
 import matplotlib.pyplot as plt
@@ -26,18 +27,23 @@ file_path_3mm_DMG_edited =  script_dir.parent / "testData" / "3mm" / "3mm_DMG_20
 
 # Everything at this point needs to go into its seperate thing
 #torque data needs to be put into absolute values due to the machine giving inverted data
-df_train_3mm_edited = udf.getTrainSet(pd.read_csv(file_path_3mm_noDMG_edited), "Zaehler", "Torque_ax8", "Torque", True).abs()
-df_test_3mm_edited = udf.getTestSet(pd.read_csv(file_path_3mm_noDMG_edited),"Zaehler", "Torque_ax8", "Torque", True).abs()
-df_train_dmg_3mm_edited = udf.getTrainSet(pd.read_csv(file_path_3mm_DMG_edited), "Zaehler", "Torque_ax8", "Torque", True).abs()
-df_test_dmg_3mm_edited = udf.getTestSet(pd.read_csv(file_path_3mm_DMG_edited), "Zaehler", "Torque_ax8", "Torque", True).abs()
 
-# print(df_train_3mm_edited) #sanity checks
-# print(df_test_3mm_edited) #sanity checks
+run.run(file_path_3mm_noDMG_edited, file_path_3mm_DMG_edited, "Torque_ax8", "Torque", 7, bAbs= True) #nSeasons how many seasons with obs there are, to get observ per season
+# run.TimeSeriesAnalysis() #produces fitted model for a given set and plotted graphs for analysing
+# run.outlierdetection() # based on time series analysis detects outliers
 
-#now onto detrending, remember get the lambda first then and save it as a global var for later detransforming after ARIMA modeling
-# Lambda by guerrero, transform by box cox
-opt_lambda_3mm_NoDmg = boxcox_lambda(df_train_3mm_edited["Torque"], method="guerrero", season_length=38)
-df_train_3mm_edited["Transformed"] = boxcox(df_train_3mm_edited["Torque"], opt_lambda_3mm_NoDmg)
+# df_train_3mm_edited = udf.getTrainSet(pd.read_csv(file_path_3mm_noDMG_edited), "Zaehler", "Torque_ax8", "Torque", True).abs()
+# df_test_3mm_edited = udf.getTestSet(pd.read_csv(file_path_3mm_noDMG_edited),"Zaehler", "Torque_ax8", "Torque", True).abs()
+# df_train_dmg_3mm_edited = udf.getTrainSet(pd.read_csv(file_path_3mm_DMG_edited), "Zaehler", "Torque_ax8", "Torque", True).abs()
+# df_test_dmg_3mm_edited = udf.getTestSet(pd.read_csv(file_path_3mm_DMG_edited), "Zaehler", "Torque_ax8", "Torque", True).abs()
+
+# # print(df_train_3mm_edited) #sanity checks
+# # print(df_test_3mm_edited) #sanity checks
+
+# #now onto detrending, remember get the lambda first then and save it as a global var for later detransforming after ARIMA modeling
+# # Lambda by guerrero, transform by box cox
+# opt_lambda_3mm_NoDmg = boxcox_lambda(df_train_3mm_edited["Torque"], method="guerrero", season_length=39)
+# df_train_3mm_edited["Transformed"] = boxcox(df_train_3mm_edited["Torque"], opt_lambda_3mm_NoDmg)
 
 
 # print(opt_lambda_3mm_NoDmg)
@@ -46,11 +52,11 @@ plt.figure(figsize=(10,6))
 plt.plot(df_train_3mm_edited["Torque"], alpha=0.7)
 plt.plot(df_train_3mm_edited["Transformed"], alpha=0.7)
 
-# plt.show()
+plt.show()
 
 #STL implement. Get Graph and especially trend
 
-stl_3mm_edited = STL.STL(df_train_3mm_edited["Transformed"], period=38, seasonal=7)
+stl_3mm_edited = STL.STL(df_train_3mm_edited["Transformed"], period=39, seasonal=7)
 stl_fitted = stl_3mm_edited.fit()
 
 fig,axes = plt.subplots(4 , 1 ,figsize=(10,6), sharex=True)
@@ -120,13 +126,13 @@ else:
 # print(df_train_3mm_edited["Transformed"].diff())
 # ok take what has been learned about the stationarity and build a ACF/PACF module to determine which lag is optimal; return a tupel for p and q, d is already set thrugh bDifference
 # plot in the run code, get the results with the module, 
-plot_acf(df_train_3mm_edited["Transformed"].diff().dropna(), lags=76)
+plot_acf(df_train_3mm_edited["Transformed"].diff().dropna(), lags=78)
 # plot_acf(df_train_3mm_edited["Transformed"], lags=76)
 # plot_pacf(df_train_3mm_edited["Transformed"], lags=76)
 # plot_pacf(df_train_3mm_edited["Transformed"].diff().dropna(), lags=76)
 # plt.show()
 
-p, d, q = corrUtil.getARIMA_Params(df_train_3mm_edited["Transformed"], 76, 0.05, b_Detrend, b_Stationary)
+p, d, q = corrUtil.getARIMA_Params(df_train_3mm_edited["Transformed"], 78, 0.05, b_Detrend, b_Stationary)
 # print(p)
 # print(d)
 # print(q)

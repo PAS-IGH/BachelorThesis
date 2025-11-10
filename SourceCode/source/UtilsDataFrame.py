@@ -32,6 +32,19 @@ def createTimeSeriesDataFrame(dfData, sDepVar, sRenameDepVar ="y", bGerman = Tru
      return dataFrame
 
 
+def getTrainAndTestSet(dfData, nObsPerSeason, depVar, sRenameDepVar, bGerman, n_Split): 
+
+     n_seasons = int(len(dfData) / nObsPerSeason) # get the amount of seasons
+     n_seasons_train = int(math.floor(n_seasons * n_Split)) #get the amount of seasons for training set)
+     n_observ_train = n_seasons_train * nObsPerSeason #get the amount of observations for train set
+
+     #max index for test set is n_observ_train - 1
+     df_train_set = createTimeSeriesDataFrame(dfData.iloc[:n_observ_train], depVar, sRenameDepVar, bGerman)
+     df_test_set = createTimeSeriesDataFrame(dfData.iloc[n_observ_train:], depVar, sRenameDepVar, bGerman).reset_index(drop=True)
+     return df_train_set, df_test_set
+
+
+
 def getTrainSet (dfData, sGroupVar, depVar, sRenameDepVar, bGerman):
      """ 
      Splits the data into a training set based on the 80/20 split (training/test)
