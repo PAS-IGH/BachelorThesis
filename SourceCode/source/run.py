@@ -26,13 +26,15 @@ def run(str_path_undamaged, str_path_damaged, sDepVar, sRenameVar, n_Seasons, n_
         df_damaged_train = df_damaged_train.abs()
         df_damaged_test = df_damaged_test.abs()
     
-    # TimeSeriesAnalysis(df_undamaged_train, df_undamaged_test, n_Seasons, n_alpha, s_test_type) #produces fitted model for a given set and plotted graphs for analysing
-    # stl = STL.STL(df_damaged_train, period=39)
-    # result = stl.fit()
-    # fig = result.plot()
-    # plt.show()
-    TimeSeriesAnalysis(df_damaged_train, df_damaged_test, n_Seasons, n_alpha, s_test_type)
-    print()
+    print(f"undmg{df_undamaged_train.mean()}")
+    print(f"dmg{df_damaged_train.mean()}")
+    
+    tsa_undmg = TimeSeriesAnalysis(df_undamaged_train, df_undamaged_test, n_Seasons, n_alpha, s_test_type) #produces fitted model for a given set and plotted graphs for analysing
+    tsa_dmg = TimeSeriesAnalysis(df_damaged_train, df_damaged_test, n_Seasons, n_alpha, s_test_type)
+    # print(tsa_undmg["fitted_optimal_model"].summary())
+    # print(tsa_dmg["fitted_optimal_model"].summary())
+
+    outDetUtil.getAnomalyThreshold(tsa_undmg, tsa_dmg, n_Seasons)
     # outlierdetection() # based on time series analysis detects outliers
 
 def TimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
@@ -66,10 +68,10 @@ def TimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
     p, d, q = corrUtil.getARIMA_Params(df_train_trans, n_Seasons*2 ,n_alpha, dict_stat_ind, dict_results)
 
     # === 5. Get Optimal ARIMA Model ===========================================================
-
+    #need to add one for detrend
     fitted_model = arimaUtil.getOptimalModel(df_train_trans, p, d, q, dict_results)
     dict_results["fitted_optimal_model"] = fitted_model 
-    print(fitted_model.summary()) #diagnostic with hetereoscedesticity. plot it maybe and jarque bera
+    #diagnostic with hetereoscedesticity. plot it maybe and jarque bera
 
     # === 6. Residual Diagnostics for Model Validation via Hetero/Homoskedatsicity, Jarque Bera and MAE
     # show these stats or rather save them as well?
@@ -87,19 +89,6 @@ def TimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
     dict_results["forecast_next_season"] = arimaUtil.getForecast(fitted_model, n_Seasons, opt_lambda)
 
     return dict_results
-    # === 8. Get MAD score =====================================================================
-
-    # pred_forecast_for_dmg_train = arimaUtil.getForecast(model_fit, len(df_train_dmg_3mm_edited["Torque"]), opt_lambda_3mm_NoDmg)
-    # pred_forecast_for_dmg_test = arimaUtil.getForecast(model_fit, len(df_test_dmg_3mm_edited["Torque"]), opt_lambda_3mm_NoDmg)
-    # pred_forecast = arimaUtil.getForecast(model_fit, len(df_test_3mm_edited["Torque"]), opt_lambda)
-
-    # n_error = df_train_dmg_3mm_edited["Torque"] - pred_forecast_for_dmg
-    # med = np.median(n_error)
-    # mad = mad(n_error, c=1.0)
-    # n_z_score = np.abs(n_error - med) / mad
-    # print(n_z_score.max())
-    # print(n_z_score.idxmax())
-
     
 
 

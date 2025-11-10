@@ -7,7 +7,8 @@ from pathlib import Path
 script_dir = Path(__file__).parent
 
 file_path_3mm_noDMG_edited = script_dir.parent / "testData" /"3mm"/"3mm_NoDMG_20092025_edited.csv" #that should also be in createTimeSeriesDataFrame, the read csv file should always be turned into a dataframe 
-file_path_3mm_DMG_edited =  script_dir.parent / "testData" / "3mm" / "3mm_DMG_20092025_edited.csv" 
+# file_path_3mm_DMG_edited =  script_dir.parent / "testData" / "3mm" / "3mm_DMG_20092025_edited.csv"
+file_path_3mm_DMG_edited =  script_dir.parent / "testData" / "3mm" / "3mm_DMG_05_11_2025_edited.csv"  
 
 # Everything at this point needs to go into its seperate thing
 #torque data needs to be put into absolute values due to the machine giving inverted data
@@ -25,12 +26,12 @@ run.run(file_path_3mm_noDMG_edited, file_path_3mm_DMG_edited, "Torque_ax8", "Tor
 # print(n_z_score.max())
 # print(n_z_score.idxmax())
 # n_max_score = detUtil.getAnomalyThreshold(df_train_dmg_3mm_edited["Torque"], pred_forecast_for_dmg_train)
-print(f"this {n_max_score} max")
+# print(f"this {n_max_score} max")
 
-# Simulate to show how the anomaly detection works
-# print(pred_forecast_for_dmg_test)
-# print(df_test_dmg_3mm_edited["Torque"])
-# n_outlier_percent = detUtil.detectOutlier(pred_forecast_for_dmg_test, df_test_dmg_3mm_edited["Torque"], n_max_score)
-n_outlier_percent = detUtil.detectOutlier(pred_forecast, df_test_3mm_edited["Torque"], n_max_score)
+# # Simulate to show how the anomaly detection works
+# # print(pred_forecast_for_dmg_test)
+# # print(df_test_dmg_3mm_edited["Torque"])
+# # n_outlier_percent = detUtil.detectOutlier(pred_forecast_for_dmg_test, df_test_dmg_3mm_edited["Torque"], n_max_score)
+# n_outlier_percent = detUtil.detectOutlier(pred_forecast, df_test_3mm_edited["Torque"], n_max_score)
 
-print(f"{n_outlier_percent} % detected")  # give back the percentage of anomalies detected in the given data based on the forecast of a fitted model and the computed anomaly threshhold 
+# print(f"{n_outlier_percent} % detected")  # give back the percentage of anomalies detected in the given data based on the forecast of a fitted model and the computed anomaly threshhold 

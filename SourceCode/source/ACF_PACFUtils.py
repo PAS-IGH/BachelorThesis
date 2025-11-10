@@ -38,7 +38,7 @@ def getARIMA_Params (df_data_series, n_lags, n_alpha, dict_stat, dict_results, d
         A tuple containing (p, n_param_d, q) ergo (p, d, q) for ARIMA(p,d,q)
     """
 
-    if dict_stat["b_Difference"] and not dict_stat["b_Stationary"]:  
+    if dict_stat["b_Difference"]:  
         #init check
         df_data_series_diffed = df_data_series.diff().dropna()
         t_corr_val_acf, t_conf_int_acf = acf(df_data_series_diffed, nlags=n_lags, alpha=n_alpha)
@@ -55,7 +55,7 @@ def getARIMA_Params (df_data_series, n_lags, n_alpha, dict_stat, dict_results, d
         p, q = getARMA_Param(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf, t_conf_int_pacf, dict_results)
         # return p, n_param_d , q
 
-    elif dict_stat["b_Detrend"] and not dict_stat["b_Stationary"]:
+    elif dict_stat["b_Detrend"]:
         #get params only, decay rate not needed as detrending took care if it
         n_param_d = 0
         df_data_series_detrended = df_data_series - df_trend_series
@@ -63,7 +63,7 @@ def getARIMA_Params (df_data_series, n_lags, n_alpha, dict_stat, dict_results, d
         t_corr_val_pacf, t_conf_int_pacf = pacf(df_data_series_detrended, nlags=n_lags, alpha=n_alpha)
         p, q = getARMA_Param(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf, t_conf_int_pacf, dict_results)
         # return p, n_param_d , q
-    elif not dict_stat["b_Detrend"] and dict_stat["b_Stationary"]:
+    elif dict_stat["b_Stationary"]:
         # well decay can be skipped as well due to it already being stationary
         n_param_d = 0
         t_corr_val_acf, t_conf_int_acf = acf(df_data_series, nlags=n_lags, alpha=n_alpha)
@@ -74,7 +74,7 @@ def getARIMA_Params (df_data_series, n_lags, n_alpha, dict_stat, dict_results, d
     # === Save Results =========================================================
     dict_results["decay_rate_acf"] = getDecayRate(t_corr_val_acf, t_conf_int_acf)
     dict_results["decay_rate_pacf"] = getDecayRate(t_corr_val_pacf, t_conf_int_pacf)
-    dict_results["ARIMA_Params"] = {
+    dict_results["ARIMA_Params_estimated"] = {
         "p": p,
         "d": n_param_d,
         "q": q
