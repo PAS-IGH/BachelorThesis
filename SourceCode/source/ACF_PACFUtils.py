@@ -16,7 +16,7 @@ import math
 # this also decided on d
 #Thus: first decay and differencing parameter, then p and q
 
-def getARIMA_Params (df_data_series, n_lags, n_alpha, bTrend, bStationary, df_trend_series = None):
+def getARIMA_Params (df_data_series, n_lags, n_alpha, dict_stat, dict_results, df_trend_series = None):
 
     """
     Returns the parameter needed for performing ARIMA operations depending on if the data needs to be
@@ -32,39 +32,55 @@ def getARIMA_Params (df_data_series, n_lags, n_alpha, bTrend, bStationary, df_tr
         df_data_series (pandas.DataSeries): A series where the params are needed for ARIMA
         n_lags (int): An integer dictating the number of lags for acf and pacf
         n_alpha (float): A floating point number indicating the alpha value
-        bTrend (bool): A boolean for indicating a trend
-        bStationary(bool): A boolean indicating stationary
+        dict_stat (dict): A dictionary containing information regrarding stationary type
         df_trend_series(pandas.DataSeries): A series containing the trend values for detrending
     Returns:
         A tuple containing (p, n_param_d, q) ergo (p, d, q) for ARIMA(p,d,q)
     """
 
-    if not bTrend and not bStationary: 
+    if dict_stat["b_Difference"] and not dict_stat["b_Stationary"]:  
         #init check
         df_data_series_diffed = df_data_series.diff().dropna()
         t_corr_val_acf, t_conf_int_acf = acf(df_data_series_diffed, nlags=n_lags, alpha=n_alpha)
         t_corr_val_pacf, t_conf_int_pacf = pacf(df_data_series_diffed, nlags=n_lags, alpha=n_alpha)
-        n_param_d = getDiffParam(getDecayRate(t_corr_val_acf, t_conf_int_acf), getDecayRate(t_corr_val_pacf, t_conf_int_pacf)) # 2 is the limit to avoid overdifferencing
+        n_param_d = getDiffParam(getDecayRate(t_corr_val_acf, t_conf_int_acf), getDecayRate(t_corr_val_pacf, t_conf_int_pacf))
+        
+        #====== 2 is the limit to avoid overdifferencing====
         if n_param_d == 2:
-            print("diff again")
-        p, q = getARMA_Param(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf, t_conf_int_pacf)
-        return p, n_param_d , q
+            df_data_series_diffed = df_data_series_diffed.diff().dropna()
+            t_corr_val_acf, t_conf_int_acf = acf(df_data_series_diffed, nlags=n_lags, alpha=n_alpha)
+            t_corr_val_pacf, t_conf_int_pacf = pacf(df_data_series_diffed, nlags=n_lags, alpha=n_alpha)
+        #============================================================
 
-    elif bTrend and not bStationary:
+        p, q = getARMA_Param(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf, t_conf_int_pacf, dict_results)
+        # return p, n_param_d , q
+
+    elif dict_stat["b_Detrend"] and not dict_stat["b_Stationary"]:
         #get params only, decay rate not needed as detrending took care if it
         n_param_d = 0
         df_data_series_detrended = df_data_series - df_trend_series
         t_corr_val_acf, t_conf_int_acf = acf(df_data_series_detrended, nlags=n_lags, alpha=n_alpha)
         t_corr_val_pacf, t_conf_int_pacf = pacf(df_data_series_detrended, nlags=n_lags, alpha=n_alpha)
-        p, q = getARMA_Param(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf, t_conf_int_pacf)
-        return p, n_param_d , q
-    elif not bTrend and bStationary:
+        p, q = getARMA_Param(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf, t_conf_int_pacf, dict_results)
+        # return p, n_param_d , q
+    elif not dict_stat["b_Detrend"] and dict_stat["b_Stationary"]:
         # well decay can be skipped as well due to it already being stationary
         n_param_d = 0
         t_corr_val_acf, t_conf_int_acf = acf(df_data_series, nlags=n_lags, alpha=n_alpha)
         t_corr_val_pacf, t_conf_int_pacf = pacf(df_data_series, nlags=n_lags, alpha=n_alpha)
-        p, q = getARMA_Param(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf, t_conf_int_pacf)
-        return p, n_param_d , q
+        p, q = getARMA_Param(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf, t_conf_int_pacf, dict_results)
+        # return p, n_param_d , q
+
+    # === Save Results =========================================================
+    dict_results["decay_rate_acf"] = getDecayRate(t_corr_val_acf, t_conf_int_acf)
+    dict_results["decay_rate_pacf"] = getDecayRate(t_corr_val_pacf, t_conf_int_pacf)
+    dict_results["ARIMA_Params"] = {
+        "p": p,
+        "d": n_param_d,
+        "q": q
+    }
+    # ==========================================================================
+    return p, n_param_d , q
 
 
 def getDiffParam(n_decay_acf , n_decay_pacf):
@@ -88,7 +104,7 @@ def getDiffParam(n_decay_acf , n_decay_pacf):
     else: 
         return n_param_d
 
-def getARMA_Param (t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf,  t_conf_int_pacf):
+def getARMA_Param (t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf,  t_conf_int_pacf, dict_results):
     """
     Wrapper methods containing a pipeline where the results of the minimum cutoff Treshold is used to estimate possible p and q params for ARIMA
     This method performs the following operations:
@@ -101,7 +117,7 @@ def getARMA_Param (t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf,  t_conf_int_
     Returns:
         p and q values for ARIMA operations
     """
-    return get_p_q(getMinLagThresholds(calcTresholds(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf,  t_conf_int_pacf)))
+    return get_p_q(getMinLagThresholds(calcTresholds(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf,  t_conf_int_pacf), dict_results))
 
 
 def get_p_q (df_minLag) :
@@ -126,7 +142,6 @@ def get_p_q (df_minLag) :
     n_lag1_val_rounded = math.floor(n_lag1_val) # always rounded down as said by Tran and Reed. Keep the original values for special cases 4 and 5
     n_lag2_val = df_minLag.loc[df_minLag["Lag"] == 2, "Cut_T_Value"].iloc[0]
     n_lag2_val_rounded= math.floor(n_lag2_val)
-    print(f"lag 1: {n_lag1_val} lag 2:{n_lag2_val}")
 
     #case 0
     if n_lag2_val_rounded == 0 and n_lag1_val_rounded == 0: 
@@ -176,8 +191,7 @@ def get_p_q (df_minLag) :
         return 1,1
 
 
-
-def getMinLagThresholds(df_thresholds):
+def getMinLagThresholds(df_thresholds, dict_results):
     """
     Creates a dataframe containing the plot type and lags based on the minimum threshold value
     This method performs the following operations:
@@ -192,7 +206,12 @@ def getMinLagThresholds(df_thresholds):
     n_min_row = df_thresholds.loc[df_thresholds["Cut_T_Value"].idxmin()] #gets the row with the minimum cutoff threshold
     s_plot_type = n_min_row["Plot_Type"]
     df_filtered_lags = df_thresholds[df_thresholds["Plot_Type"] == s_plot_type]
-    print(df_filtered_lags)
+
+    # === Save Results ===========================================
+    dict_results["cutoff_thresholds"] = df_thresholds
+    dict_results["cutoff_thresholds_minimum"] = n_min_row
+    dict_results["cutoff_thresholds_filtered"] = df_filtered_lags
+    # ============================================================
     return df_filtered_lags
 
 def calcTresholds(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf,  t_conf_int_pacf): 
