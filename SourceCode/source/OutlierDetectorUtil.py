@@ -16,7 +16,7 @@ def detectOutlier(df_forecast, df_ong_obs, n_max_score, n_jarque_bera = None):
     df_mad_scores = getMADScores(df_ong_obs, df_forecast, n_jarque_bera)
     print(df_mad_scores) 
     df_obs_filtered = df_mad_scores[df_mad_scores >= n_max_score]
-    n_percentage_anomalies = len(df_obs_filtered) / len(df_ong_obs) * 100 # amount of anomalies per observation set detected
+    n_percentage_anomalies = len(df_obs_filtered) / len(df_ong_obs) * 100 # amount of anomalies per observation set detected maybe math floor would make sense
     return n_percentage_anomalies
 
 def getMADScores(df_series_ano, df_series_forecast, n_jarque_bera = None): 

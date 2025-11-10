@@ -1,23 +1,7 @@
 #put a method in here starting it all?
-
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from . import UtilsDataFrame as udf
-from . import STLUtils as stlu
-from . import StationaryUtils as statutil
-from . import ACF_PACFUtils as corrUtil
-from . import ARIMAUtils as arimaUtil
 from . import OutlierDetectorUtil as detUtil
 from . import run as run
 from pathlib import Path
-from coreforecast.scalers import boxcox, inv_boxcox, boxcox_lambda
-import matplotlib.pyplot as plt
-import statsmodels.tsa.seasonal as STL
-from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-from statsmodels.tsa.arima.model import ARIMA
-from statsmodels.robust.scale import mad
-from sklearn.metrics import mean_absolute_error
 
 # read the given data sets this is part of the main
 script_dir = Path(__file__).parent
@@ -40,7 +24,7 @@ run.run(file_path_3mm_noDMG_edited, file_path_3mm_DMG_edited, "Torque_ax8", "Tor
 # n_z_score = np.abs(n_error - med) / mad
 # print(n_z_score.max())
 # print(n_z_score.idxmax())
-n_max_score = detUtil.getAnomalyThreshold(df_train_dmg_3mm_edited["Torque"], pred_forecast_for_dmg_train)
+# n_max_score = detUtil.getAnomalyThreshold(df_train_dmg_3mm_edited["Torque"], pred_forecast_for_dmg_train)
 print(f"this {n_max_score} max")
 
 # Simulate to show how the anomaly detection works

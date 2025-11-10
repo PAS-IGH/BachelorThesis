@@ -15,20 +15,15 @@ def getStatInd(df_DataSeries, n_alpha, s_test_type, bTrending, dict_results):
     elif not bTrending:
         s_regress = "c"
     
-    n_Stationary =  getStationary(df_DataSeries, s_regress, n_alpha, s_test_type, dict_results)
+    str_Stationary =  getStationary(df_DataSeries, s_regress, n_alpha, s_test_type, dict_results)
 
-    if n_Stationary == 0 and bTrending:
-        dict_results["stationary_status"]["stat_type"] = "trend"
+    if str_Stationary == "trend":
         dict_stat["b_Detrend"] = True # detrend 
-    elif n_Stationary == 0 and not bTrending:
-        dict_results["stationary_status"]["stat_type"] = "stationary"
+    elif str_Stationary == "stationary":
         dict_stat["b_Stationary"] = True #stationary
-    elif n_Stationary == 1:
-        dict_results["stationary_status"]["stat_type"] = "difference"
+    elif str_Stationary == "difference":
         dict_stat["b_Difference"] = True #difference
-    elif n_Stationary == -1:
-        print(n_Stationary) #no idea yet
-    
+
     return dict_stat
 
 
@@ -70,10 +65,7 @@ def checkStatADFKPSS (df_DataSeries, s_ARParam, s_alpha, dict_results):
         s_regress (str): A string dictating regression type (ct = constant and trend, c=constant, n = no constant/trend)
         s_alpha (str): A string indicating the percentage for the alpha value
     Returns:
-        A integer indicating the stationary status
-        * 0 : stationary
-        * 1 : non stationary
-        * -1: inconcusive
+        A string indicating stationary type
     """
     adfRes = adfWrapper(df_DataSeries, s_ARParam, s_alpha, dict_results)
     kpssResult = kpssWrapper(df_DataSeries, s_ARParam, s_alpha, dict_results)
@@ -81,32 +73,40 @@ def checkStatADFKPSS (df_DataSeries, s_ARParam, s_alpha, dict_results):
     if not adfRes and kpssResult:
         # === Save results =======================
         dict_results["stationary_status"] = {
-            "n_stat_indicator" : 0,
             "stationary_status" : "stationary",
-            "stat_type": None
+            "stat_type": "stationary"
         }
+        str_stat_type = "stationary"
         #=========================================
-        return 0 #stationary
     elif adfRes and not kpssResult:
         # === Save results =======================
         dict_results["stationary_status"] = {
-            "n_stat_indicator" : 1,
             "stationary_status" : "non-stationary",
-            "stat_type": None
+            "stat_type":"difference"
         }
         #=========================================
-        return 1 #non-stationary
-    elif not adfRes and not kpssResult:
+        str_stat_type = "difference"
+    
+    elif not adfRes and not kpssResult :
+        # === Save results =======================
+        dict_results["stationary_status"] = {
+            "stationary_status" : "non-stationary",
+            "stat_type":"difference"
+        }
+        #=========================================
+        str_stat_type = "difference"
+
+    elif adfRes and kpssResult:
 
         # === Save results =======================
         dict_results["stationary_status"] = {
-            "n_stat_indicator" : -1,
-            "stationary_status" : "inconclusive",
-            "stat_type": None
+            "stationary_status" : "non-stationary",
+            "stat_type": "trend"
         }
         #=========================================
-        return -1 #inconclusive 
-
+        str_stat_type = "trend"
+    return str_stat_type
+         
 
 def adfWrapper(df_DataSeries, s_ARParam, s_alpha, dict_results):
 
