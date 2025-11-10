@@ -7,6 +7,7 @@ from . import StationaryUtils as statUtil
 from . import ACF_PACFUtils as corrUtil
 from . import ARIMAUtils as arimaUtil
 import statsmodels.tsa.seasonal as STL
+from sklearn.metrics import mean_absolute_error
 
 def run(str_path_undamaged, tr_path_damaged, sDepVar, sRenameVar, n_Seasons, n_alpha, s_test_type, nSplit=0.8, bAbs=False,):
 
@@ -42,7 +43,10 @@ def TimeSeriesAnalysis(dict_results, df_undamaged_train, df_undamaged_test, n_Se
         index = df_undamaged_train.index,
         columns = df_undamaged_train.columns
     )
-    dict_results["test_trans_set"] = df_undamaged_train_trans
+    dict_results["test_trans_set"] = {
+        "df_set": df_undamaged_train_trans,
+        "opt_lamda": opt_lambda
+        }
 
     # === 2. STL Decomposition ================================================================= 
     stl_train_set = STL.STL(df_undamaged_train_trans, period=n_Seasons) # Set up the STL object and its params
@@ -61,19 +65,26 @@ def TimeSeriesAnalysis(dict_results, df_undamaged_train, df_undamaged_test, n_Se
     fitted_model = arimaUtil.getOptimalModel(df_undamaged_train_trans, p, d, q, dict_results)
     dict_results["fitted_optimal_model"] = fitted_model 
     print(fitted_model.summary()) #diagnostic with hetereoscedesticity. plot it maybe and jarque bera
-    #forecast into leng(testSet), transform with inverse boxcox before with the lambda computed above
 
-    # === 6. Model Goodness via Hetero/Homoskedatsicity, Jarque Bera and MAE
+    # === 6. Residual Diagnostics for Model Validation via Hetero/Homoskedatsicity, Jarque Bera and MAE
     # show these stats or rather save them as well?
-    
+    a_forecast_for_mae = arimaUtil.getForecast(fitted_model, len(df_undamaged_test), opt_lambda)
+    n_MAE = mean_absolute_error(df_undamaged_test, a_forecast_for_mae)
+    dict_results["ARIMA"] = {
+        "summary": fitted_model.summary().as_text(),
+        "mae" : n_MAE,
+        "mae_in_sample": (n_MAE / df_undamaged_train.mean()) * 100,
+        "mae_out_sample": (n_MAE / df_undamaged_test.mean()) * 100
+    } 
 
     # === 7. Forecast ==========================================================================
-    pred_forecast = arimaUtil.getForecast(model_fit, len(df_test_3mm_edited["Torque"]), opt_lambda_3mm_NoDmg)
-    pred_forecast_for_dmg_train = arimaUtil.getForecast(model_fit, len(df_train_dmg_3mm_edited["Torque"]), opt_lambda_3mm_NoDmg)
-    pred_forecast_for_dmg_test = arimaUtil.getForecast(model_fit, len(df_test_dmg_3mm_edited["Torque"]), opt_lambda_3mm_NoDmg)
 
     print(p, d, q)
 
+    # === 8. Get MAD score =====================================================================
+    # pred_forecast_for_dmg_train = arimaUtil.getForecast(model_fit, len(df_train_dmg_3mm_edited["Torque"]), opt_lambda_3mm_NoDmg)
+    # pred_forecast_for_dmg_test = arimaUtil.getForecast(model_fit, len(df_test_dmg_3mm_edited["Torque"]), opt_lambda_3mm_NoDmg)
+    # pred_forecast = arimaUtil.getForecast(model_fit, len(df_test_3mm_edited["Torque"]), opt_lambda)
 
     
 

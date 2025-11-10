@@ -27,36 +27,7 @@ file_path_3mm_DMG_edited =  script_dir.parent / "testData" / "3mm" / "3mm_DMG_20
 
 # Everything at this point needs to go into its seperate thing
 #torque data needs to be put into absolute values due to the machine giving inverted data
-dict_results = {}
-
 run.run(file_path_3mm_noDMG_edited, file_path_3mm_DMG_edited, "Torque_ax8", "Torque", 39, 0.05, "ADF", bAbs= True) #nSeasons how many seasons with obs there are, to get observ per season
-
-#MAE: to show how good the model performs
-# print(pred_forecast)
-# print(pred_forecast_for_dmg_train)
-# mae = mean_absolute_error(df_test_3mm_edited["Torque"], pred_forecast)
-# print(mae)
-# mae_2 = mean_absolute_error(df_train_dmg_3mm_edited["Torque"], pred_forecast_for_dmg)
-# print(mae_2)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #Outlier Detector, MAD and training it inv_boxcox opt_lambda_3mm_NoDmg
 #Outlier detector impl
