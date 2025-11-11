@@ -5,40 +5,101 @@
 from statsmodels.robust.scale import mad
 import numpy as np
 from . import ARIMAUtils as arimaUtil
-def getAnomalyThreshold(dict_data_baseline , dict_data_anomaly, n_Seasons):
+import math
+import pandas as pd
+
+
+def getAnomalies(df_baseline_fore, df_anomaly_fore, df_observ, dict_results): 
+    # Get the errors from the median of the forecast to the given observation 
+    df_base_err = df_observ - np.median(df_baseline_fore)
+
+    # Get the errors for the upper and lower bound by subtracting the median of the anomaly forecast from the observations and its inverted form
+    df_anomaly_err_pos = (df_observ - np.median(df_anomaly_fore)).abs() # Idea like the band for ACF and PACF
+    df_anomaly_err_neg = np.negative(df_anomaly_err_pos)
+
+    # produces an array containing boolean for anomalies for each index where one happens to be based on being nearer to the error of the forecasted anomalous process
+    is_anomaly = (df_anomaly_err_pos < df_base_err) | (df_anomaly_err_neg > df_base_err) 
+    n_indices_anomalies = np.where(is_anomaly)[0]
+
+    # === Save Results =========
+    dict_results["anomaly_indices"] = is_anomaly
+    dict_results["df_anomalies"] = n_indices_anomalies
+
+    dict_results["df_base_err"] = df_base_err
+    dict_results["df_anomaly_err_pos"] = df_anomaly_err_pos
+    dict_results["df_anomaly_err_neg"] = df_anomaly_err_neg
+
+    #===========================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# def detectOutlier(dict_data_baseline, df_data_compare, n_max_score, n_jarque_bera = None):
+#     # gets the mad scors of ongoing
+#     #detects the percentage of anomalies of a given observation set
+#     df_forecast_comp = arimaUtil.getForecast(dict_data_baseline["fitted_optimal_model"], len(df_data_compare), dict_data_baseline["test_trans_set"]["opt_lamda"])
+
+#     df_scores = getMADScores(df_forecast_comp, df_data_compare)
+
+#     df_filtered = df_scores[(df_scores >= n_max_score).all(axis=1)]
+#     n_percentage_anomalies = len(df_filtered) / len(df_data_compare) *100
+
+#     return n_percentage_anomalies 
+
+# def getAnomalyThreshold(dict_data_baseline , dict_data_anomaly, df_compare):
     
-    df_baseline_fore = arimaUtil.getForecast(dict_data_baseline["fitted_optimal_model"], n_Seasons, dict_data_baseline["test_trans_set"]["opt_lamda"])
-    df_anomaly_fore = arimaUtil.getForecast(dict_data_anomaly["fitted_optimal_model"], n_Seasons, dict_data_anomaly["test_trans_set"]["opt_lamda"])
+#     c = 1.00
+#     # df_anomaly_test = dict_data_anomaly["train_set"]
+#     # df_baseline_fore = arimaUtil.getForecast(dict_data_baseline["fitted_optimal_model"], len(df_anomaly_test), dict_data_baseline["test_trans_set"]["opt_lamda"])
 
-    n_mad_score = getMADScores(df_anomaly_fore, df_baseline_fore).max()
+#     # df_abs_err = np.abs(df_anomaly_test - np.median(df_baseline_fore))
+#     # n_mad = mad(df_abs_err, c = c)
+#     # #score calc
+#     # n_mad_scores = df_abs_err / n_mad
+#     # n_max_score = np.quantile(n_mad_scores , 0.75)
 
-    return n_mad_score
+#     df_baseline_fore = arimaUtil.getForecast(dict_data_baseline["fitted_optimal_model"], len(df_compare), dict_data_baseline["test_trans_set"]["opt_lamda"])
+#     df_anomaly_fore = arimaUtil.getForecast(dict_data_anomaly["fitted_optimal_model"], len(df_compare), dict_data_anomaly["test_trans_set"]["opt_lamda"])
 
-def getMADScores(df_anomaly_fore, df_baseline_fore, n_jarque_bera = None): 
+#     df_baseline_err = df_compare - df_baseline_fore
+#     df_anomaly_err = df_compare - df_anomaly_fore
 
-    if not n_jarque_bera:
+#     is_anomaly = df_anomaly_err < df_baseline_err
+#     return n_max_score    
 
-        # df_err = df_anomaly_fore - df_baseline_fore
-        # n_med = np.median(df_err)
+# def getMADScores(df_baseline_fore,df_to_compare, n_jarque_bera = None): 
+#     c = 1.00
+#     df_abs_err = np.abs(df_to_compare - np.median(df_baseline_fore))
+#     n_mad = mad(df_abs_err, c = 1.00)
 
-        n_med_baseline = np.median(df_baseline_fore)
-        
-        n_mad = mad(df_err, c=1.0)
-        df_score = np.abs(df_err - n_med) / n_mad
-        return df_score
-    else: 
-        df_err = df_anomaly_fore - df_baseline_fore
-        n_med = np.median(df_err)
-        n_mad = mad(df_err, c=1.4826)
-        df_score = np.abs(df_err - n_med) / n_mad
-        return df_score
+#     #score per observation
+#     df_scores = df_abs_err / n_mad
 
-def detectOutlier(df_forecast, df_ong_obs, n_max_score, n_jarque_bera = None):
-    # gets the mad scors of ongoing
-    #detects the percentage of anomalies of a given observation set
-    df_mad_scores = getMADScores(df_ong_obs, df_forecast, n_jarque_bera)
-    print(df_mad_scores) 
-    df_obs_filtered = df_mad_scores[df_mad_scores >= n_max_score]
-    n_percentage_anomalies = len(df_obs_filtered) / len(df_ong_obs) * 100 # amount of anomalies per observation set detected maybe math floor would make sense
-    return n_percentage_anomalies
+#     return df_scores
+
+
 

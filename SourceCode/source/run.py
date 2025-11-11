@@ -7,8 +7,10 @@ from . import StationaryUtils as statUtil
 from . import ACF_PACFUtils as corrUtil
 from . import ARIMAUtils as arimaUtil
 from . import OutlierDetectorUtil as outDetUtil
+from . import OutPut as out
 import statsmodels.tsa.seasonal as STL
 from sklearn.metrics import mean_absolute_error
+import numpy as np
 
 def run(str_path_undamaged, str_path_damaged, sDepVar, sRenameVar, n_Seasons, n_alpha, s_test_type, nSplit=0.8, bAbs=False,):
 
@@ -26,18 +28,21 @@ def run(str_path_undamaged, str_path_damaged, sDepVar, sRenameVar, n_Seasons, n_
         df_damaged_train = df_damaged_train.abs()
         df_damaged_test = df_damaged_test.abs()
     
-    print(f"undmg{df_undamaged_train.mean()}")
-    print(f"dmg{df_damaged_train.mean()}")
-    
-    tsa_undmg = TimeSeriesAnalysis(df_undamaged_train, df_undamaged_test, n_Seasons, n_alpha, s_test_type) #produces fitted model for a given set and plotted graphs for analysing
-    tsa_dmg = TimeSeriesAnalysis(df_damaged_train, df_damaged_test, n_Seasons, n_alpha, s_test_type)
+    tsa_undmg_results = doTimeSeriesAnalysis(df_undamaged_train, df_undamaged_test, n_Seasons, n_alpha, s_test_type) #produces fitted model for a given set and plotted graphs for analysing
+    tsa_dmg_results = doTimeSeriesAnalysis(df_damaged_train, df_damaged_test, n_Seasons, n_alpha, s_test_type)
     # print(tsa_undmg["fitted_optimal_model"].summary())
     # print(tsa_dmg["fitted_optimal_model"].summary())
+    # ========================= Outlier Detection Simulation
+    df_damaged_train_cut = df_damaged_train.iloc[:10]
 
-    outDetUtil.getAnomalyThreshold(tsa_undmg, tsa_dmg, n_Seasons)
-    # outlierdetection() # based on time series analysis detects outliers
+    concat_series = pd.concat([df_damaged_train_cut, df_undamaged_test])
+    scrambled_series = concat_series.sample(frac=1).reset_index(drop=True)
 
-def TimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
+    outDetect_result = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, scrambled_series)
+
+    out.output([tsa_undmg_results, tsa_dmg_results], [outDetect_result])
+
+def doTimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
 
     dict_results = {
     "train_set": df_train,
@@ -89,6 +94,56 @@ def TimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
     dict_results["forecast_next_season"] = arimaUtil.getForecast(fitted_model, n_Seasons, opt_lambda)
 
     return dict_results
+
+def simulateOutlierDetection(m_TimeSeries_Baseline, m_TimeSeries_Anomalous, df_observ):
+
+    dict_results = {}
+    df_baseline_fore = arimaUtil.getForecast(m_TimeSeries_Baseline["fitted_optimal_model"], len(df_observ), m_TimeSeries_Baseline["test_trans_set"]["opt_lamda"])
+    df_anomaly_fore = arimaUtil.getForecast(m_TimeSeries_Anomalous["fitted_optimal_model"], len(df_observ), m_TimeSeries_Anomalous["test_trans_set"]["opt_lamda"])
+    dict_results["df_observ_outDet"] = df_observ
+
+    # === 1. Get detected anomalies and its indices based on the given observations set
+    anomalies_detected = outDetUtil.getAnomalies(df_baseline_fore, df_anomaly_fore, df_observ, dict_results)
+
+
+    # === 2. Plot the detected anomalies with the given indices
+
+    # Save the observation, median base forecast df, median anomalous forecast df
+    #Base forecast
+    n_median_baseline = np.median(df_baseline_fore)
+    dict_results["df_baseline_fore_median"] = pd.DataFrame([n_median_baseline] * len(df_observ))
+
+    # Anomalous forecast
+    n_median_anomaly_pos = np.median(df_anomaly_fore)
+    dict_results["df_anomal_fore_median_pos"]  = pd.DataFrame([n_median_anomaly_pos] * len(df_observ))
+
+    n_median_anomaly_neg = np.negative(np.median(df_anomaly_fore))
+    dict_results["df_anomal_fore_median_neg"] = pd.DataFrame([n_median_anomaly_neg] * len(df_observ))
+
+
+    # print("Plotting results...")
+    # plt.figure(figsize=(15, 7))
+    # plt.title("Anomaly Detection by Model Competition", fontsize=16)
+
+    # plt.plot(df_baseline_fore, label="Forecast: Normal", linestyle="--", color="blue")
+    # plt.plot(df_anomaly_fore, label="Forecast: Anomalous +", linestyle="--", color="orange")
+    # # plt.plot(df_anomaly_fore.negative(), label="Forecast: Anomalous +", linestyle="--", color="orange")
+
+    # plt.plot(df_observ, label="Actual Data", color="black", alpha=0.6, linewidth=1.5)
+
+    # plt.scatter(anomaly_indices, df_observ.iloc[anomaly_indices], 
+    #             color="red", 
+    #             marker="x", 
+    #             s=50, 
+    #             label="Anomaly Detected")
+
+    # plt.legend()
+    # plt.xlabel("Data Point Index (Time)")
+    # plt.ylabel("Value")
+    # plt.grid(True, linestyle=":", alpha=0.6)
+    # plt.show()
+
+    return dict_results
     
 
 
@@ -109,20 +164,20 @@ def TimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
 
 
 
-def doSomething():
-    fig,axes = plt.subplots(4 , 1 ,figsize=(10,6), sharex=True)
-    axes[0].plot(df_train_3mm_edited.index, stl_fitted.observed, color="black")
-    axes[0].set_xlabel("Torque in nm transformed")
-    axes[0].set_ylabel("Torque[nM]")
+# def doSomething():
+#     fig,axes = plt.subplots(4 , 1 ,figsize=(10,6), sharex=True)
+#     axes[0].plot(df_train_3mm_edited.index, stl_fitted.observed, color="black")
+#     axes[0].set_xlabel("Torque in nm transformed")
+#     axes[0].set_ylabel("Torque[nM]")
 
-    axes[1].plot(df_train_3mm_edited.index, stl_fitted.trend, color="green")
-    axes[1].set_ylabel("Trend")
+#     axes[1].plot(df_train_3mm_edited.index, stl_fitted.trend, color="green")
+#     axes[1].set_ylabel("Trend")
 
-    axes[2].plot(df_train_3mm_edited.index, stl_fitted.seasonal, color="blue")
-    axes[2].set_ylabel("Seasonal")
+#     axes[2].plot(df_train_3mm_edited.index, stl_fitted.seasonal, color="blue")
+#     axes[2].set_ylabel("Seasonal")
 
-    axes[3].plot(df_train_3mm_edited.index, stl_fitted.resid, color="red")
-    axes[3].set_ylabel("Residual")
-    axes[3].set_xlabel("Time in working steps")
+#     axes[3].plot(df_train_3mm_edited.index, stl_fitted.resid, color="red")
+#     axes[3].set_ylabel("Residual")
+#     axes[3].set_xlabel("Time in working steps")
 
-    plt.tight_layout()
+#     plt.tight_layout()
