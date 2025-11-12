@@ -120,29 +120,6 @@ def simulateOutlierDetection(m_TimeSeries_Baseline, m_TimeSeries_Anomalous, df_o
     n_median_anomaly_neg = np.negative(np.median(df_anomaly_fore))
     dict_results["df_anomal_fore_median_neg"] = pd.DataFrame([n_median_anomaly_neg] * len(df_observ))
 
-
-    # print("Plotting results...")
-    # plt.figure(figsize=(15, 7))
-    # plt.title("Anomaly Detection by Model Competition", fontsize=16)
-
-    # plt.plot(df_baseline_fore, label="Forecast: Normal", linestyle="--", color="blue")
-    # plt.plot(df_anomaly_fore, label="Forecast: Anomalous +", linestyle="--", color="orange")
-    # # plt.plot(df_anomaly_fore.negative(), label="Forecast: Anomalous +", linestyle="--", color="orange")
-
-    # plt.plot(df_observ, label="Actual Data", color="black", alpha=0.6, linewidth=1.5)
-
-    # plt.scatter(anomaly_indices, df_observ.iloc[anomaly_indices], 
-    #             color="red", 
-    #             marker="x", 
-    #             s=50, 
-    #             label="Anomaly Detected")
-
-    # plt.legend()
-    # plt.xlabel("Data Point Index (Time)")
-    # plt.ylabel("Value")
-    # plt.grid(True, linestyle=":", alpha=0.6)
-    # plt.show()
-
     return dict_results
     
 

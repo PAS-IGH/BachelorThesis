@@ -18,14 +18,28 @@ def getAnomalies(df_baseline_fore, df_anomaly_fore, df_observ, dict_results):
     df_anomaly_err_neg = np.negative(df_anomaly_err_pos)
 
     # produces an array containing boolean for anomalies for each index where one happens to be based on being nearer to the error of the forecasted anomalous process
-    is_anomaly = (df_anomaly_err_pos < df_base_err) | (df_anomaly_err_neg > df_base_err) 
+    is_anomaly = (df_anomaly_err_pos <= df_base_err) | (df_anomaly_err_neg >= df_base_err) 
     n_indices_anomalies = np.where(is_anomaly)[0]
 
+    # create a data collection containing the band value for this observation
+    n_min = np.abs(df_base_err.min().min())
+
+    n_band_value =  n_min
+    n_band_value_fore_upper = n_band_value + np.median(df_baseline_fore)
+    n_band_value_fore_lower = np.median(df_baseline_fore) - n_band_value
+    
+    df_band_values = pd.DataFrame([n_band_value] * len(df_observ))
+    df_band_values_base_fore_upper = pd.DataFrame([n_band_value_fore_upper] * len(df_observ))
+    df_band_values_base_fore_lower = pd.DataFrame([n_band_value_fore_lower] * len(df_observ))
     # === Save Results =========
-    dict_results["anomaly_indices"] = is_anomaly
-    dict_results["df_anomalies"] = n_indices_anomalies
+    dict_results["anomaly_bool"] = is_anomaly
+    dict_results["df_anomalies_indices"] = n_indices_anomalies
 
     dict_results["df_base_err"] = df_base_err
+    dict_results["df_base_band_values"] = df_band_values
+    dict_results["df_base_fore_band_values_upper"] = df_band_values_base_fore_upper
+    dict_results["df_base_fore_band_values_lower"] = df_band_values_base_fore_lower
+
     dict_results["df_anomaly_err_pos"] = df_anomaly_err_pos
     dict_results["df_anomaly_err_neg"] = df_anomaly_err_neg
 
