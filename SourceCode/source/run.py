@@ -13,11 +13,6 @@ from sklearn.metrics import mean_absolute_error
 import numpy as np
 
 def run(str_path_undamaged, str_path_damaged, sDepVar, sRenameVar, n_Seasons, n_alpha, s_test_type, nSplit=0.8, bAbs=False,):
-
-    # df_train_3mm_edited = udf.getTrainSet(pd.read_csv(str_path_undamaged), "Zaehler", "Torque_ax8", "Torque", True).abs()
-    # df_test_3mm_edited = udf.getTestSet(pd.read_csv(file_path_3mm_noDMG_edited),"Zaehler", "Torque_ax8", "Torque", True).abs()
-    # df_train_dmg_3mm_edited = udf.getTrainSet(pd.read_csv(file_path_3mm_DMG_edited), "Zaehler", "Torque_ax8", "Torque", True).abs()
-    # df_test_dmg_3mm_edited = udf.getTestSet(pd.read_csv(file_path_3mm_DMG_edited), "Zaehler", "Torque_ax8", "Torque", True).abs()
     
     df_undamaged_train, df_undamaged_test = dfUtils.getTrainAndTestSet(pd.read_csv(str_path_undamaged), n_Seasons, sDepVar, sRenameVar, True, nSplit)
     df_damaged_train, df_damaged_test = dfUtils.getTrainAndTestSet(pd.read_csv(str_path_damaged), n_Seasons, sDepVar, sRenameVar, True, nSplit)
@@ -30,8 +25,7 @@ def run(str_path_undamaged, str_path_damaged, sDepVar, sRenameVar, n_Seasons, n_
     
     tsa_undmg_results = doTimeSeriesAnalysis(df_undamaged_train, df_undamaged_test, n_Seasons, n_alpha, s_test_type) #produces fitted model for a given set and plotted graphs for analysing
     tsa_dmg_results = doTimeSeriesAnalysis(df_damaged_train, df_damaged_test, n_Seasons, n_alpha, s_test_type)
-    # print(tsa_undmg["fitted_optimal_model"].summary())
-    # print(tsa_dmg["fitted_optimal_model"].summary())
+
     # ========================= Outlier Detection Simulation
     df_damaged_train_cut = df_damaged_train.iloc[:10]
 
@@ -39,9 +33,9 @@ def run(str_path_undamaged, str_path_damaged, sDepVar, sRenameVar, n_Seasons, n_
     scrambled_series = concat_series.sample(frac=1).reset_index(drop=True)
 
     outDetect_result = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, scrambled_series)
-    outDetect_result1 = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, df_damaged_train)
+    # outDetect_result1 = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, df_damaged_train)
 
-    out.output(tsa_undmg_results, tsa_dmg_results, [outDetect_result, outDetect_result1])
+    out.output(tsa_undmg_results, tsa_dmg_results, [outDetect_result])
 
 def doTimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
 
@@ -56,7 +50,7 @@ def doTimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
         index = df_train.index,
         columns = df_train.columns
     )
-    dict_results["test_trans_set"] = {
+    dict_results["train_trans_set"] = {
         "df_set": df_train_trans,
         "opt_lamda": opt_lambda
         }
@@ -105,8 +99,8 @@ def doTimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
 def simulateOutlierDetection(m_TimeSeries_Baseline, m_TimeSeries_Anomalous, df_observ):
 
     dict_results = {}
-    df_baseline_fore = arimaUtil.getForecast(m_TimeSeries_Baseline["fitted_optimal_model"], len(df_observ), m_TimeSeries_Baseline["test_trans_set"]["opt_lamda"])
-    df_anomaly_fore = arimaUtil.getForecast(m_TimeSeries_Anomalous["fitted_optimal_model"], len(df_observ), m_TimeSeries_Anomalous["test_trans_set"]["opt_lamda"])
+    df_baseline_fore = arimaUtil.getForecast(m_TimeSeries_Baseline["fitted_optimal_model"], len(df_observ), m_TimeSeries_Baseline["train_trans_set"]["opt_lamda"])
+    df_anomaly_fore = arimaUtil.getForecast(m_TimeSeries_Anomalous["fitted_optimal_model"], len(df_observ), m_TimeSeries_Anomalous["train_trans_set"]["opt_lamda"])
     dict_results["df_observ_outDet"] = df_observ
 
     # === 1. Get detected anomalies and its indices based on the given observations set
