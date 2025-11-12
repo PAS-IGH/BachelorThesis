@@ -39,6 +39,7 @@ def run(str_path_undamaged, str_path_damaged, sDepVar, sRenameVar, n_Seasons, n_
     scrambled_series = concat_series.sample(frac=1).reset_index(drop=True)
 
     outDetect_result = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, scrambled_series)
+    # outDetect_result = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, df_damaged_train)
 
     out.output([tsa_undmg_results, tsa_dmg_results], [outDetect_result])
 
@@ -116,9 +117,6 @@ def simulateOutlierDetection(m_TimeSeries_Baseline, m_TimeSeries_Anomalous, df_o
     # Anomalous forecast
     n_median_anomaly_pos = np.median(df_anomaly_fore)
     dict_results["df_anomal_fore_median_pos"]  = pd.DataFrame([n_median_anomaly_pos] * len(df_observ))
-
-    n_median_anomaly_neg = np.negative(np.median(df_anomaly_fore))
-    dict_results["df_anomal_fore_median_neg"] = pd.DataFrame([n_median_anomaly_neg] * len(df_observ))
 
     return dict_results
     

@@ -12,13 +12,11 @@ def output(l_TimeSeries_Results, l_Outlier_Results):
     plt.figure(figsize=(6,4)) 
     plt.title("Anomaly Detection Simulation", fontsize=16)
     # === Create a blue "confidence band based on the max error of baseline to observation"
-
-    plt.fill_between(test_outlier["df_baseline_fore_median"].index, test_outlier["df_base_fore_band_values_lower"].squeeze(), test_outlier["df_base_fore_band_values_upper"].squeeze(), color="#0072B2", alpha=0.2, label="Limits for Baseline")
+    # As we only have an anomaly set for a damaged mill head where the toque is higher than the base, only the uppe region is considered
+    plt.fill_between(test_outlier["df_baseline_fore_median"].index, test_outlier["df_baseline_fore_median"].squeeze(), test_outlier["df_base_fore_band_values_upper"].squeeze(), color="#0072B2", alpha=0.2, label="Limit for Baseline")
     # === Plot the forecasted base and anomalous value  
     plt.plot(test_outlier["df_baseline_fore_median"], label="Forecast: Baseline", linestyle="--", color ="blue")
-    # plt.plot(test_outlier["df_anomal_fore_median_pos"], label="Forecast: Anomaly Positive", linestyle="--", color ="orange")
-    # plt.plot(test_outlier["df_anomal_fore_median_neg"], label="Forecast: Anomaly Negative", linestyle="--", color ="orange")
-
+    plt.plot(test_outlier["df_anomal_fore_median_pos"], label="Forecast: Anomaly Positive", linestyle="--", color ="orange")
     plt.plot(test_outlier["df_observ_outDet"], label="Original Forecast", color="black")
     
     # === Plot the anomalies
