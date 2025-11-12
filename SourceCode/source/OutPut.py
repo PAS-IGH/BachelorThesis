@@ -101,7 +101,7 @@ def writeOutputsTSA(l_TimeSeries_Results, script_dir, str_FolderName, str_tsa_na
     except:
         print("Folder already exists. Saving it there")
 
-    with open(f"{script_dir.parent}/output/{str_FolderName}/TSA_{str_tsa_name}", "w", encoding="utf-8") as f:
+    with open(f"{script_dir.parent}/output/{str_FolderName}/TSA_{str_tsa_name}.md", "w", encoding="utf-8") as f:
         f.write(gen_text)
     # coefficient_table impl
 
