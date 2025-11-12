@@ -14,5 +14,5 @@ file_path_5mm_DMG_edited =  script_dir.parent / "testData" / "5mm" / "5mm_DMG_05
 
 # Everything at this point needs to go into its seperate thing
 # torque data needs to be put into absolute values due to the machine giving inverted data
-run.run(file_path_3mm_noDMG_edited, file_path_3mm_DMG_edited, "Torque_ax8", "Torque", 39, 0.05, "ADF", bAbs= True) #nSeasons how many seasons with obs there are, to get observ per season
-# run.run(file_path_5mm_noDMG_edited, file_path_5mm_DMG_edited, "Torque_ax8", "Torque", 39, 0.05, "ADF", bAbs= True) 
+run.run(file_path_3mm_noDMG_edited, file_path_3mm_DMG_edited, "Torque_ax8", "Torque", 39, 0.05, "ADF",script_dir, bAbs= True, str_FolderName="3mm_Analysis") #nSeasons how many seasons with obs there are, to get observ per season
+run.run(file_path_5mm_noDMG_edited, file_path_5mm_DMG_edited, "Torque_ax8", "Torque", 39, 0.05, "ADF",script_dir, bAbs= True, str_FolderName="5mm_Analysis") 

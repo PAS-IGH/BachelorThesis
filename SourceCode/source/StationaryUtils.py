@@ -168,7 +168,7 @@ def kpssWrapper(df_DataSeries, s_ARParam, s_alpha, dict_results):
     #=== Save results ===
     dict_results["kpss_test_statistic"] = {
         "t_value": n_kpss_stat,
-        "critical_valu": n_kpss_crit, 
+        "critical_value": n_kpss_crit, 
         "null_hypo": False if n_kpss_stat >= n_kpss_crit else True
     }
     #====================

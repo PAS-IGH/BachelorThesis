@@ -12,7 +12,7 @@ import statsmodels.tsa.seasonal as STL
 from sklearn.metrics import mean_absolute_error
 import numpy as np
 
-def run(str_path_undamaged, str_path_damaged, sDepVar, sRenameVar, n_Seasons, n_alpha, s_test_type, nSplit=0.8, bAbs=False,):
+def run(str_path_undamaged, str_path_damaged, sDepVar, sRenameVar, n_Seasons, n_alpha, s_test_type, script_dir, nSplit=0.8, bAbs=False, str_FolderName=None):
     
     df_undamaged_train, df_undamaged_test = dfUtils.getTrainAndTestSet(pd.read_csv(str_path_undamaged), n_Seasons, sDepVar, sRenameVar, True, nSplit)
     df_damaged_train, df_damaged_test = dfUtils.getTrainAndTestSet(pd.read_csv(str_path_damaged), n_Seasons, sDepVar, sRenameVar, True, nSplit)
@@ -35,7 +35,7 @@ def run(str_path_undamaged, str_path_damaged, sDepVar, sRenameVar, n_Seasons, n_
     outDetect_result = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, scrambled_series)
     # outDetect_result1 = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, df_damaged_train)
 
-    out.output(tsa_undmg_results, tsa_dmg_results, [outDetect_result])
+    out.output(tsa_undmg_results, tsa_dmg_results, [outDetect_result],script_dir, str_FolderName)
 
 def doTimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
 
@@ -52,7 +52,7 @@ def doTimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
     )
     dict_results["train_trans_set"] = {
         "df_set": df_train_trans,
-        "opt_lamda": opt_lambda
+        "opt_lambda": opt_lambda
         }
 
     # === 2. STL Decomposition ================================================================= 
@@ -99,8 +99,8 @@ def doTimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
 def simulateOutlierDetection(m_TimeSeries_Baseline, m_TimeSeries_Anomalous, df_observ):
 
     dict_results = {}
-    df_baseline_fore = arimaUtil.getForecast(m_TimeSeries_Baseline["fitted_optimal_model"], len(df_observ), m_TimeSeries_Baseline["train_trans_set"]["opt_lamda"])
-    df_anomaly_fore = arimaUtil.getForecast(m_TimeSeries_Anomalous["fitted_optimal_model"], len(df_observ), m_TimeSeries_Anomalous["train_trans_set"]["opt_lamda"])
+    df_baseline_fore = arimaUtil.getForecast(m_TimeSeries_Baseline["fitted_optimal_model"], len(df_observ), m_TimeSeries_Baseline["train_trans_set"]["opt_lambda"])
+    df_anomaly_fore = arimaUtil.getForecast(m_TimeSeries_Anomalous["fitted_optimal_model"], len(df_observ), m_TimeSeries_Anomalous["train_trans_set"]["opt_lambda"])
     dict_results["df_observ_outDet"] = df_observ
 
     # === 1. Get detected anomalies and its indices based on the given observations set
