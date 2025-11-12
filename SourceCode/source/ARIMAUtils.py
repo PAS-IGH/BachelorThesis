@@ -1,6 +1,8 @@
 
 from statsmodels.tsa.arima.model import ARIMA, ARIMAResults
 from coreforecast.scalers import inv_boxcox
+from statsmodels.tsa.forecasting.stl import STLForecast
+
 # def getForecast(inverseBoxCoxLmabda fitted model)
 def getOptimalModel(df_series, p, d, q, dict_results):
     """
@@ -40,7 +42,7 @@ def fitAR(df_series, p, d, dict_results):
     Returns:
         An optimally fitted AR model
     """
-    p_range = range(max(0, p - 1), p + 2)
+    p_range = range(max(0, p - 1), p + 3)
     good_models = [] #models whose ljung box pvalue ar not below 0.05
     dict_results["models"] = []
     for i in p_range:
@@ -92,7 +94,7 @@ def fitMA(df_series,d, q, dict_results):
     Returns:
         An optimally fitted MA model
     """
-    q_range = range(max(0, q - 1), q + 2)
+    q_range = range(max(0, q - 1), q + 3)
     good_models = [] #models whose ljung box pvalue ar not below 0.05
     dict_results["models"] = []
     for i in q_range:
@@ -147,8 +149,8 @@ def fitARIMA(df_series,p, d, q, dict_results):
     Returns:
         An optimally fitted ARMA model
     """
-    p_range = range(max(0, p - 1), p + 2) 
-    q_range = range(max(0, q - 1), q + 2)
+    p_range = range(max(0, p - 1), p + 3) 
+    q_range = range(max(0, q - 1), q + 3)
     good_models = [] #models whose ljung box pvalue ar not below 0.05
     dict_results["models"] = []
     for i in p_range:
@@ -208,5 +210,6 @@ def getForecast(ARIMAResults_fitted,fore_length, n_lambda = None):
 
         pred_forecast = ARIMAResults_fitted.forecast(steps=fore_length)
         return inv_boxcox(pred_forecast, n_lambda)
+
     else:
         return ARIMAResults_fitted.forecast(steps=fore_length)

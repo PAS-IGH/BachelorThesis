@@ -175,7 +175,14 @@ def get_p_q (df_minLag) :
             else:
                 return 0 , 1
     #special case 5; see Tran and Reed for detailed info
-    elif n_lag2_val_rounded == 1 and n_lag1_val_rounded > 1:              
+    elif n_lag2_val_rounded == 1 and n_lag1_val_rounded > 1: 
+        
+        if n_lag1_val_rounded > 1:
+            if b_AR:
+                return 2 , 0
+            else:
+                return 0 , 2
+
         if n_lag1_val > n_lag2_val and n_lag2_val > 1.5:
             if b_AR:
                 return 2 , 0
@@ -205,7 +212,7 @@ def getMinLagThresholds(df_thresholds, dict_results):
     """
     n_min_row = df_thresholds.loc[df_thresholds["Cut_T_Value"].idxmin()] #gets the row with the minimum cutoff threshold
     s_plot_type = n_min_row["Plot_Type"]
-    df_filtered_lags = df_thresholds[df_thresholds["Plot_Type"] == s_plot_type]
+    df_filtered_lags = df_thresholds[df_thresholds["Plot_Type"] == s_plot_type].reset_index(drop=True)
 
     # === Save Results ===========================================
     dict_results["cutoff_thresholds"] = df_thresholds

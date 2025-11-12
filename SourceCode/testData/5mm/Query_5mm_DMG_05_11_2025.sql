@@ -1,0 +1,1 @@
+SELECT Zeitstempel,reserve_1, reserve_2, Zaehler, Strom, Spannung, Temp_ax8, Torque_ax8, WirkLeistung FROM dbo.MaschinenDatenAI WHERE Zeitstempel >= '2025-11-05 15:34:00.000' AND  Zeitstempel <= '2025-11-05 15:42:00.000'

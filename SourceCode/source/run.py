@@ -39,9 +39,9 @@ def run(str_path_undamaged, str_path_damaged, sDepVar, sRenameVar, n_Seasons, n_
     scrambled_series = concat_series.sample(frac=1).reset_index(drop=True)
 
     outDetect_result = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, scrambled_series)
-    # outDetect_result = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, df_damaged_train)
+    outDetect_result1 = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, df_damaged_train)
 
-    out.output([tsa_undmg_results, tsa_dmg_results], [outDetect_result])
+    out.output(tsa_undmg_results, tsa_dmg_results, [outDetect_result, outDetect_result1])
 
 def doTimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
 
@@ -75,13 +75,19 @@ def doTimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
 
     # === 5. Get Optimal ARIMA Model ===========================================================
     #need to add one for detrend
+
     fitted_model = arimaUtil.getOptimalModel(df_train_trans, p, d, q, dict_results)
     dict_results["fitted_optimal_model"] = fitted_model 
+
+
     #diagnostic with hetereoscedesticity. plot it maybe and jarque bera
 
     # === 6. Residual Diagnostics for Model Validation via Hetero/Homoskedatsicity, Jarque Bera and MAE
     # show these stats or rather save them as well?
-    a_forecast_for_mae = arimaUtil.getForecast(fitted_model, len(df_test), opt_lambda)
+
+
+    a_forecast_for_mae = arimaUtil.getForecast(fitted_model, len(df_test),opt_lambda)
+
     n_MAE = mean_absolute_error(df_test, a_forecast_for_mae)
     dict_results["ARIMA"] = {
         "summary": fitted_model.summary().as_text(),
