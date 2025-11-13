@@ -222,7 +222,7 @@ def plotOutputsTSA(l_TimeSeries_Result_Base,l_TimeSeries_Result_Anomaly,script_d
     plt.plot(base_forecast, label="Base Forecast", color="blue", alpha=0.7)
     plt.plot(anomaly_forecast, label="Anomaly Forecast", color="red", alpha=0.7)
 
-    plt.title("Base and Anomaly One Season ahead Forecast")
+    plt.title("Base and Anomaly One Season Forecast")
     plt.legend()
     plt.xlabel("Milling Steps (cumulated)")
     plt.ylabel("Torque in Nm")
