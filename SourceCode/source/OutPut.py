@@ -83,7 +83,6 @@ def writeOutputsTSA(l_TimeSeries_Results, script_dir, str_FolderName, str_tsa_na
 
         "n_obs":l_TimeSeries_Results['fitted_optimal_model'].nobs,
         "optimal_model_aic":round(l_TimeSeries_Results['fitted_optimal_model'].aic, 6),
-        "hetero_pValue":round(l_TimeSeries_Results['fitted_optimal_model'].nobs, 6),
 
         "coefficient_table":""
     }

@@ -51,7 +51,6 @@
 
 - **Number of Observation:** 195
 - **AIC:** -584.19287
-- **Heteroscedasticity p-value**: 195
 
 | Coefficient type | Value |
 |------------------|-------|

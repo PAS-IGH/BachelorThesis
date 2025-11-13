@@ -43,7 +43,6 @@
 
 - **Number of Observation:** {n_obs}
 - **AIC:** {optimal_model_aic}
-- **Heteroscedasticity p-value**: {hetero_pValue}
 
 | Coefficient type | Value |
 |------------------|-------|
