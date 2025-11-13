@@ -32,9 +32,11 @@ def getAnomalies(df_baseline_fore, df_anomaly_fore, df_observ, dict_results):
     # === Save Results =========
     dict_results["anomaly_bool"] = is_anomaly
     dict_results["df_anomalies_indices"] = n_indices_anomalies
+    dict_results["df_anomalies"] = df_anomalies
 
     dict_results["df_base_err"] = df_base_err
     dict_results["df_base_fore_band_values_upper"] = df_band_values_base_fore_upper
+    dict_results["lowest_anomaly"] = n_band_value_upper
 
     #===========================
 

@@ -112,10 +112,11 @@ def simulateOutlierDetection(m_TimeSeries_Baseline, m_TimeSeries_Anomalous, df_o
     # Save the observation, median base forecast df, median anomalous forecast df
     #Base forecast
     n_median_baseline = np.median(df_baseline_fore)
+    dict_results["n_baseline_fore_median"] = n_median_baseline
     dict_results["df_baseline_fore_median"] = pd.DataFrame([n_median_baseline] * len(df_observ))
 
     # Anomalous forecast
     n_median_anomaly_pos = np.median(df_anomaly_fore)
+    dict_results["n_median_anomaly_fore_pos"] = n_median_anomaly_pos
     dict_results["df_anomal_fore_median_pos"]  = pd.DataFrame([n_median_anomaly_pos] * len(df_observ))
-
     return dict_results

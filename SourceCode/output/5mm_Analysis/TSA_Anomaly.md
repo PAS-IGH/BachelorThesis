@@ -30,8 +30,8 @@
 | PACF        |     2 |       1.42231 |
 
 
-- **Minimum Threshold Value:** Minimum: 2 / Value: 1.422311
-- **Suggested Model:** PACF
+- **Minimum Threshold Value:** Minimum Lag: 2 / Value: 1.422311
+- **Suggested Model:** ARIMA(2, 0, 0)
 ---
 
 ## 4. Model Selection

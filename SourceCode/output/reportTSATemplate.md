@@ -25,8 +25,8 @@
 {threshold_table}
 
 
-- **Minimum Threshold Value:** Minimum: {Min_Lag} / Value: {Minimum_value}
-- **Suggested Model:** {Plot_Type}
+- **Minimum Threshold Value:** Minimum Lag: {Min_Lag} / Value: {Minimum_value}
+- **Suggested Model:** {sugg_Model}
 ---
 
 ## 4. Model Selection
