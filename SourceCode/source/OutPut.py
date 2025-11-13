@@ -75,7 +75,7 @@ def writeOutputsTSA(l_TimeSeries_Results, script_dir, str_FolderName, str_tsa_na
 
     dict_context["candidate_table"] = str_candidate_table
     # coefficient_table impl
-    
+
     # === Write the object into the md file
     gen_text = template_text.format(**dict_context)
 
@@ -108,7 +108,7 @@ def writeOutputOutlierSim(l_Outlier_Results,script_dir, str_FolderName):
         "median_anomaly_fore": f"{outl_res['n_median_anomaly_fore_pos']:.6f}",
         "lowest_anomaly":f"{outl_res['lowest_anomaly']:.6f}",
 
-        "anomalies": outl_res["df_anomalies"].to_markdown(index=False)
+        "anomalies": outl_res["df_anomalies"].to_markdown()
         }
 
         gen_text = template_text.format(**dict_context)
