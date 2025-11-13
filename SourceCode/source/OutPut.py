@@ -43,6 +43,11 @@ def output(l_TimeSeries_Result_Base,l_TimeSeries_Result_Anomaly, l_Outlier_Resul
         plt.xlabel("Production Step (cumuluated)")
         plt.ylabel("Value")
         plt.grid(True, linestyle=":", alpha=0.6)
+    try: 
+        os.makedirs(f"{script_dir.parent}/output/{str_FolderName}/plots")
+    except:
+        print("Directory already existing. Using existing instead")
+    plt.savefig(f"{script_dir.parent}/output/{str_FolderName}/plots/OutlierSimulation.pdf", bbox_inches="tight")
     
 
 def writeOutputsTSA(l_TimeSeries_Results, script_dir, str_FolderName, str_tsa_name):

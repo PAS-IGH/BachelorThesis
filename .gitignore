@@ -6,5 +6,6 @@ ENV/
 scikit-learn/
 aaronssache/
 aaronsscrtip.py
-# SourceCode/output 
+SourceCode/output 
+.VSCodeCounter/
 # SourceCode/output späte wieder rausnehmen

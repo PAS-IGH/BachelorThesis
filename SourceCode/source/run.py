@@ -57,7 +57,7 @@ def doTimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
 
     # === 2. STL Decomposition ================================================================= 
     stl_train_set = STL.STL(df_train_trans, period=n_Seasons) # Set up the STL object and its params
-    stl_fitted = stl_train_set.fit()                                   # Decomposing via STL
+    stl_fitted = stl_train_set.fit()                          # Decomposing via STL
     dict_results["stl_train"] = stl_fitted
 
     # === 3. Stationary Check ==================================================================
@@ -119,40 +119,3 @@ def simulateOutlierDetection(m_TimeSeries_Baseline, m_TimeSeries_Anomalous, df_o
     dict_results["df_anomal_fore_median_pos"]  = pd.DataFrame([n_median_anomaly_pos] * len(df_observ))
 
     return dict_results
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# def doSomething():
-#     fig,axes = plt.subplots(4 , 1 ,figsize=(10,6), sharex=True)
-#     axes[0].plot(df_train_3mm_edited.index, stl_fitted.observed, color="black")
-#     axes[0].set_xlabel("Torque in nm transformed")
-#     axes[0].set_ylabel("Torque[nM]")
-
-#     axes[1].plot(df_train_3mm_edited.index, stl_fitted.trend, color="green")
-#     axes[1].set_ylabel("Trend")
-
-#     axes[2].plot(df_train_3mm_edited.index, stl_fitted.seasonal, color="blue")
-#     axes[2].set_ylabel("Seasonal")
-
-#     axes[3].plot(df_train_3mm_edited.index, stl_fitted.resid, color="red")
-#     axes[3].set_ylabel("Residual")
-#     axes[3].set_xlabel("Time in working steps")
-
-#     plt.tight_layout()
