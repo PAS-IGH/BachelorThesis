@@ -223,8 +223,8 @@ def plotOutputsTSA(l_TimeSeries_Result_Base,l_TimeSeries_Result_Anomaly,script_d
     anomaly_forecast = l_TimeSeries_Result_Anomaly["forecast_next_season"]
 
     plt.figure(figsize=(6,4)) 
-    plt.plot(base_forecast, label="Base Forecast", color="blue", alpha=0.7)
     plt.plot(anomaly_forecast, label="Anomaly Forecast", color="red", alpha=0.7)
+    plt.plot(base_forecast, label="Base Forecast", color="blue", alpha=0.7)
 
     plt.title("Base and Anomaly One Season Forecast")
     plt.legend()
