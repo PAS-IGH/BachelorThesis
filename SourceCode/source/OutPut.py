@@ -108,7 +108,9 @@ def writeOutputOutlierSim(l_Outlier_Results,script_dir, str_FolderName):
         "median_anomaly_fore": f"{outl_res['n_median_anomaly_fore_pos']:.6f}",
         "lowest_anomaly":f"{outl_res['lowest_anomaly']:.6f}",
 
-        "anomalies": outl_res["df_anomalies"].to_markdown()
+        "anomalies": outl_res["df_anomalies"].to_markdown(),
+        "failure_percentage": outl_res["failure_percentage"],
+        "str_recommendation": outl_res["str_recommendation"] if outl_res["str_recommendation"] else "Operations can go on"
         }
 
         gen_text = template_text.format(**dict_context)
@@ -140,11 +142,13 @@ def plotOutlierSim(l_Outlier_Results,script_dir, str_FolderName =None):
         plt.xlabel("Milling Steps(cumulated)")
         plt.ylabel("Torque in Nm")
         plt.grid(True, linestyle=":", alpha=0.6)
-    try: 
-        os.makedirs(f"{script_dir.parent}/output/{str_FolderName}/plots")
-    except:
-        print("Directory already existing. Using existing instead")
-    plt.savefig(f"{script_dir.parent}/output/{str_FolderName}/plots/OutlierSimulation.pdf", bbox_inches="tight")
+        try: 
+            os.makedirs(f"{script_dir.parent}/output/{str_FolderName}/plots")
+        except:
+            print("Directory already existing. Using existing instead")
+        plt.savefig(f"{script_dir.parent}/output/{str_FolderName}/plots/OutlierSimulation_{i}.pdf", bbox_inches="tight")
+        plt.clf()
+        plt.close()
 
 def plotOutputsTSA(l_TimeSeries_Result_Base,l_TimeSeries_Result_Anomaly,script_dir, str_FolderName =None):
     # === plot===

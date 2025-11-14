@@ -39,6 +39,27 @@ def getAnomalies(df_baseline_fore, df_anomaly_fore, df_observ, dict_results):
     dict_results["lowest_anomaly"] = n_band_value_upper
 
     #===========================
+    return df_anomalies
+
+def getRecommendation(df_anomalies, df_observ, dict_results):
+
+    failure_percentage = len(df_anomalies) / len(df_observ)
+    str_recommendation = ""
+
+    if 0.2 > failure_percentage >= 0.05:
+        str_recommendation = "Schedule maintenance as soon as possible"
+    if 0.3 > failure_percentage >= 0.2:
+        str_recommendation = "Schedule maintenance"
+    elif 0.4 > failure_percentage >= 0.3:
+        str_recommendation = "Schedule maintenance immediately"
+    elif failure_percentage >= 0.4:
+        str_recommendation = "Critical operations failure imminent"
+    
+    dict_results["str_recommendation"] = str_recommendation
+    dict_results["failure_percentage"] = round(failure_percentage * 100, 6) 
+
+    return str_recommendation
+
 
 
 

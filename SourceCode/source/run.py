@@ -26,16 +26,25 @@ def run(str_path_undamaged, str_path_damaged, sDepVar, sRenameVar, n_Seasons, n_
     tsa_undmg_results = doTimeSeriesAnalysis(df_undamaged_train, df_undamaged_test, n_Seasons, n_alpha, s_test_type) #produces fitted model for a given set and plotted graphs for analysing
     tsa_dmg_results = doTimeSeriesAnalysis(df_damaged_train, df_damaged_test, n_Seasons, n_alpha, s_test_type)
 
-    # ========================= Outlier Detection Simulation
-    df_damaged_train_cut = df_damaged_train.iloc[:10]
+    # ========================= Outlier Detection Simulation =============================
+    # Get three cases for the three types of maintenance alerts
 
-    concat_series = pd.concat([df_damaged_train_cut, df_undamaged_test])
-    scrambled_series = concat_series.sample(frac=1).reset_index(drop=True)
+    df_damaged_test_sched_maint = df_damaged_test.iloc[-8:]
+    df_damaged_test_sched_maint_asap = df_damaged_test.iloc[-31:]
+    df_damaged_test_maint_imm = df_damaged_test.iloc[-60:]
+    df_damaged_test_critical = df_damaged_test.iloc[-100:]
 
-    outDetect_result = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, scrambled_series)
-    # outDetect_result1 = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, df_damaged_train)
+    concat_series_sched_maint = pd.concat([df_undamaged_test, df_damaged_test_sched_maint]).sample(frac=1).reset_index(drop=True)
+    concat_series_sched_maint_asap = pd.concat([df_undamaged_test, df_damaged_test_sched_maint_asap]).sample(frac=1).reset_index(drop=True)
+    concat_series_sched_maint_imme = pd.concat([df_undamaged_test, df_damaged_test_maint_imm]).sample(frac=1).reset_index(drop=True)
+    concat_series_sched_crit = pd.concat([df_undamaged_test, df_damaged_test_critical]).sample(frac=1).reset_index(drop=True)
 
-    out.output(tsa_undmg_results, tsa_dmg_results, [outDetect_result],script_dir, str_FolderName)
+    outDetect_result_sched_main = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, concat_series_sched_maint)
+    outDetect_result_sched_maint_asap = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, concat_series_sched_maint_asap)
+    outDetect_result_sched_maint_imme  = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, concat_series_sched_maint_imme)
+    outDetect_result_sched_crit  = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, concat_series_sched_crit)
+
+    out.output(tsa_undmg_results, tsa_dmg_results, [outDetect_result_sched_main, outDetect_result_sched_maint_asap, outDetect_result_sched_maint_imme, outDetect_result_sched_crit],script_dir, str_FolderName)
 
 def doTimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
 
@@ -105,7 +114,7 @@ def simulateOutlierDetection(m_TimeSeries_Baseline, m_TimeSeries_Anomalous, df_o
 
     # === 1. Get detected anomalies and its indices based on the given observations set
     anomalies_detected = outDetUtil.getAnomalies(df_baseline_fore, df_anomaly_fore, df_observ, dict_results)
-
+    anomaly_percentage = outDetUtil.getRecommendation(anomalies_detected, df_observ, dict_results)
 
     # === 2. Plot the detected anomalies with the given indices
 
