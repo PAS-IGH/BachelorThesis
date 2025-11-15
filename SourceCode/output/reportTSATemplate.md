@@ -44,6 +44,4 @@
 - **Number of Observation:** {n_obs}
 - **AIC:** {optimal_model_aic}
 
-| Coefficient type | Value |
-|------------------|-------|
 {coefficient_table}

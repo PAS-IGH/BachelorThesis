@@ -7,4 +7,4 @@
 ## 2. Outliers
 {anomalies}
 
-- **Maintenance Recommendation**: {str_recommendation} (Failure percentage: {failure_percentage}%)
+- **Maintenance Recommendation:** {str_recommendation} (Failure percentage: {failure_percentage}%)
