@@ -8,6 +8,7 @@ from . import ACF_PACFUtils as corrUtil
 from . import ARIMAUtils as arimaUtil
 from . import OutlierDetectorUtil as outDetUtil
 from . import OutPut as out
+from . import ModelEvaluation as modEval
 import statsmodels.tsa.seasonal as STL
 from sklearn.metrics import mean_absolute_error
 import numpy as np
@@ -26,6 +27,8 @@ def run(str_path_undamaged, str_path_damaged, sDepVar, sRenameVar, n_Seasons, n_
     tsa_undmg_results = doTimeSeriesAnalysis(df_undamaged_train, df_undamaged_test, n_Seasons, n_alpha, s_test_type) #produces fitted model for a given set and plotted graphs for analysing
     tsa_dmg_results = doTimeSeriesAnalysis(df_damaged_train, df_damaged_test, n_Seasons, n_alpha, s_test_type)
 
+
+    t_model_detector_eval = modEval.getEvaluationResults(tsa_undmg_results, tsa_dmg_results)
     # ========================= Outlier Detection Simulation =============================
     # Get three cases for the three types of maintenance alerts
 
@@ -44,7 +47,7 @@ def run(str_path_undamaged, str_path_damaged, sDepVar, sRenameVar, n_Seasons, n_
     outDetect_result_sched_maint_imme  = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, concat_series_sched_maint_imme)
     outDetect_result_sched_crit  = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, concat_series_sched_crit)
 
-    out.output(tsa_undmg_results, tsa_dmg_results, [outDetect_result_sched_main, outDetect_result_sched_maint_asap, outDetect_result_sched_maint_imme, outDetect_result_sched_crit],script_dir, str_FolderName)
+    out.output(tsa_undmg_results, tsa_dmg_results,t_model_detector_eval, [outDetect_result_sched_main, outDetect_result_sched_maint_asap, outDetect_result_sched_maint_imme, outDetect_result_sched_crit],script_dir, str_FolderName)
 
 def doTimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
 
@@ -94,9 +97,7 @@ def doTimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
     n_MAE = mean_absolute_error(df_test, a_forecast_for_mae)
     dict_results["ARIMA"] = {
         "summary": fitted_model.summary().as_text(),
-        "mae" : n_MAE,
-        "mae_in_sample": (n_MAE / df_train_trans.mean()) * 100,
-        "mae_out_sample": (n_MAE / df_test.mean()) * 100
+        "mae" : n_MAE
     } 
 
     # === 7. Forecast the next Season==========================================================================

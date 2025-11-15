@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import os
 
-def output(l_TimeSeries_Result_Base,l_TimeSeries_Result_Anomaly, l_Outlier_Results,script_dir, str_FolderName =None):
+def output(l_TimeSeries_Result_Base,l_TimeSeries_Result_Anomaly,l_Evaluation, l_Outlier_Results,script_dir, str_FolderName =None):
     #=== Time Series Result=====================================
 
     plotOutputsTSA(l_TimeSeries_Result_Base,l_TimeSeries_Result_Anomaly, script_dir, str_FolderName)
@@ -16,7 +16,35 @@ def output(l_TimeSeries_Result_Base,l_TimeSeries_Result_Anomaly, l_Outlier_Resul
     plotOutlierSim(l_Outlier_Results,script_dir, str_FolderName)
 
     writeOutputOutlierSim(l_Outlier_Results,script_dir, str_FolderName)
-    
+    writeEval(l_Evaluation, script_dir, str_FolderName )
+
+
+def writeEval(l_Evaluation, script_dir, str_FolderName):
+
+    with open(f"{script_dir.parent}/output/reportEvaluationTemplate.md", "r", encoding="utf-8") as f:
+        template_text = f.read()
+
+        dict_context = {
+            "base_to_base": l_Evaluation["base_to_base"],
+            "ano_to_ano": l_Evaluation["ano_to_ano"],
+            "base_to_ano": l_Evaluation["base_to_ano"],
+            "ano_to_base": l_Evaluation["ano_to_base"],
+            "TN": l_Evaluation["cm"]["TN"],
+            "FP": l_Evaluation["cm"]["FP"],
+            "FN": l_Evaluation["cm"]["FN"] ,
+            "TP": l_Evaluation["cm"]["TP"],
+            "precision": l_Evaluation["cm"]["precision"],
+            "recall": l_Evaluation["cm"]["recall"]
+        }
+
+    try:
+        os.makedirs(f"{script_dir.parent}/output/{str_FolderName}")
+    except:
+        print("Folder already exists. Saving it there")
+
+    gen_text = template_text.format(**dict_context)
+    with open(f"{script_dir.parent}/output/{str_FolderName}/model_eval.md", "w", encoding="utf-8") as f:
+        f.write(gen_text)
 
 def writeOutputsTSA(l_TimeSeries_Results, script_dir, str_FolderName, str_tsa_name):
 
@@ -53,7 +81,7 @@ def writeOutputsTSA(l_TimeSeries_Results, script_dir, str_FolderName, str_tsa_na
         "n_obs":l_TimeSeries_Results['fitted_optimal_model'].nobs,
         "optimal_model_aic":round(l_TimeSeries_Results['fitted_optimal_model'].aic, 6),
 
-        "coefficient_table":""
+        "coefficient_table":l_TimeSeries_Results["fitted_optimal_model"].params.to_markdown()
     }
     # === Get the estimated params
     p  = l_TimeSeries_Results['ARIMA_Params_estimated']["p"]
