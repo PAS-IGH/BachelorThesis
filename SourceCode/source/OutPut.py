@@ -208,40 +208,42 @@ def plotOutputsTSA(l_TimeSeries_Result_Base,l_TimeSeries_Result_Anomaly,script_d
     stl_fitted_anomaly = l_TimeSeries_Result_Anomaly["stl_train"]
 
             # === Plot Base STL ========
-    fig, axes_base = plt.subplots(4, 1, figsize=(10,6), sharex=True)
+    fig, axes_base = plt.subplots(2, 1, figsize=(10,6), sharex=True)
     axes_base[0].plot(tsa_base_train_trans.index, stl_fitted_base.observed, color="black")
     axes_base[0].set_ylabel("Torque[Nm]")
     axes_base[0].set_title("STL of Transformed Base Training Set")
 
     axes_base[1].plot(tsa_base_train_trans.index, stl_fitted_base.trend, color="green")
     axes_base[1].set_ylabel("Trend")
+    axes_base[1].set_xlabel("Milling Steps (cumulated)")
 
-    axes_base[2].plot(tsa_base_train_trans.index, stl_fitted_base.seasonal, color="blue")
-    axes_base[2].set_ylabel("Seasonal")
+    # axes_base[2].plot(tsa_base_train_trans.index, stl_fitted_base.seasonal, color="blue")
+    # axes_base[2].set_ylabel("Seasonal")
 
-    axes_base[3].plot(tsa_base_train_trans.index, stl_fitted_base.resid, color="red")
-    axes_base[3].set_ylabel("Residual")
-    axes_base[3].set_xlabel("Milling Steps (cumulated)")
+    # axes_base[3].plot(tsa_base_train_trans.index, stl_fitted_base.resid, color="red")
+    # axes_base[3].set_ylabel("Residual")
+    # axes_base[3].set_xlabel("Milling Steps (cumulated)")
 
     plt.tight_layout()
             #== Save Figure
     plt.savefig(f"{script_dir.parent}/output/{str_FolderName}/plots/STL_Base.pdf", bbox_inches="tight")
 
             # === Plot Anomaly STL ======
-    fig, axes_base = plt.subplots(4, 1, figsize=(10,6), sharex=True)
+    fig, axes_base = plt.subplots(2, 1, figsize=(10,6), sharex=True)
     axes_base[0].plot(tsa_anomaly_train_trans.index, stl_fitted_anomaly.observed, color="black")
     axes_base[0].set_ylabel("Torque[Nm]")
     axes_base[0].set_title("STL of Transformed Anomaly Training Set")
 
     axes_base[1].plot(tsa_anomaly_train_trans.index, stl_fitted_anomaly.trend, color="green")
     axes_base[1].set_ylabel("Trend")
+    axes_base[1].set_xlabel("Milling Steps (cumulated)")
 
-    axes_base[2].plot(tsa_anomaly_train_trans.index, stl_fitted_anomaly.seasonal, color="blue")
-    axes_base[2].set_ylabel("Seasonal")
+    # axes_base[2].plot(tsa_anomaly_train_trans.index, stl_fitted_anomaly.seasonal, color="blue")
+    # axes_base[2].set_ylabel("Seasonal")
 
-    axes_base[3].plot(tsa_anomaly_train_trans.index, stl_fitted_anomaly.resid, color="red")
-    axes_base[3].set_ylabel("Residual")
-    axes_base[3].set_xlabel("Milling Steps (cumulated)")
+    # axes_base[3].plot(tsa_anomaly_train_trans.index, stl_fitted_anomaly.resid, color="red")
+    # axes_base[3].set_ylabel("Residual")
+    # axes_base[3].set_xlabel("Milling Steps (cumulated)")
 
             #== Save Figure
     plt.savefig(f"{script_dir.parent}/output/{str_FolderName}/plots/STL_Anomaly.pdf", bbox_inches="tight")
