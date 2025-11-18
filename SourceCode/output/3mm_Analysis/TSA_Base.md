@@ -47,7 +47,7 @@
 
 ---
 
-**5. Final Model Diagnostics**
+## 5. Final Model Diagnostics**
 
 - **Number of Observation:** 195
 - **AIC:** -975.449202

@@ -7,13 +7,13 @@
 ## 2. Outliers
 |    |   Torque |
 |---:|---------:|
-| 10 |    0.67  |
-| 24 |    0.67  |
-| 35 |    0.627 |
-| 42 |    0.67  |
+|  9 |    0.627 |
+| 25 |    0.776 |
+| 32 |    0.67  |
+| 39 |    0.612 |
+| 40 |    0.67  |
 | 70 |    0.722 |
-| 71 |    0.776 |
-| 75 |    0.612 |
-| 76 |    0.67  |
+| 72 |    0.67  |
+| 84 |    0.67  |
 
 - **Maintenance Recommendation:** Schedule maintenance as soon as possible (Failure percentage: 9.302326%)
