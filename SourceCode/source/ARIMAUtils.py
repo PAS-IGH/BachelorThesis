@@ -49,7 +49,11 @@ def fitAR(df_series, p, d, dict_results):
         if i==0:
             continue
         try:
-            fitted_model = ARIMA(df_series, order=(i , d, 0)).fit()
+            if dict_results['stationary_status']["stat_type"] == "trend":
+                fitted_model = ARIMA(df_series, order=(i , d, 0), trend="ct").fit()
+            else:
+                fitted_model = ARIMA(df_series, order=(i , d, 0)).fit()
+            
             n_ljungBox_results = fitted_model.test_serial_correlation(method="ljungbox")
             n_ljungBox_pValue = n_ljungBox_results[0,1,-1] #gets the p-value of the last lag, portmonteau cumulative test
 
@@ -101,7 +105,11 @@ def fitMA(df_series,d, q, dict_results):
         if i==0:
             continue
         try:
-            fitted_model = ARIMA(df_series, order=(0 , d , i)).fit()
+            if dict_results['stationary_status']["stat_type"] == "trend":
+                fitted_model = ARIMA(df_series, order=(0 , d, i), trend="ct").fit()
+            else:
+                fitted_model = ARIMA(df_series, order=(0 , d, i)).fit()
+
             n_ljungBox_results = fitted_model.test_serial_correlation(method="ljungbox")
             n_ljungBox_pValue = n_ljungBox_results[0,1,-1] #gets the p-value of the last lag, portmonteau cumulative test
 
@@ -158,7 +166,10 @@ def fitARIMA(df_series,p, d, q, dict_results):
             if i==0 and j == 0:
                 continue
             try:
-                fitted_model = ARIMA(df_series, order=(i , d , j)).fit()
+                if dict_results['stationary_status']["stat_type"] == "trend":
+                    fitted_model = ARIMA(df_series, order=(i , d, j), trend="ct").fit()
+                else:
+                    fitted_model = ARIMA(df_series, order=(i , d, j)).fit()
                 n_ljungBox_results = fitted_model.test_serial_correlation(method="ljungbox")
                 n_ljungBox_pValue = n_ljungBox_results[0,1,-1] #gets the p-value of the last lag, portmonteau cumulative test
 

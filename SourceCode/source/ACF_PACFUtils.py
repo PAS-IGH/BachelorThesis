@@ -58,7 +58,7 @@ def getARIMA_Params (df_data_series, n_lags, n_alpha, dict_stat, dict_results, d
     elif dict_stat["b_Detrend"]:
         #get params only, decay rate not needed as detrending took care if it
         n_param_d = 0
-        df_data_series_detrended = df_data_series - df_trend_series
+        df_data_series_detrended = df_data_series.iloc[:,0] - df_trend_series
         t_corr_val_acf, t_conf_int_acf = acf(df_data_series_detrended, nlags=n_lags, alpha=n_alpha)
         t_corr_val_pacf, t_conf_int_pacf = pacf(df_data_series_detrended, nlags=n_lags, alpha=n_alpha)
         p, q = getARMA_Param(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf, t_conf_int_pacf, dict_results)

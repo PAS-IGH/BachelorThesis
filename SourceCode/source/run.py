@@ -77,8 +77,11 @@ def doTimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
     dict_stat_ind = statUtil.getStatInd(df_train_trans, n_alpha, s_test_type, b_Trending, dict_results)
 
     # === 4. ARIMA Params Gathering ============================================================
-    p, d, q = corrUtil.getARIMA_Params(df_train_trans, n_Seasons*2 ,n_alpha, dict_stat_ind, dict_results)
 
+    if dict_results['stationary_status']["stat_type"] == "trend":
+        p, d, q = corrUtil.getARIMA_Params(df_train_trans, n_Seasons*2 ,n_alpha, dict_stat_ind, dict_results,df_trend_series =stl_fitted.trend)
+    else:
+        p, d, q = corrUtil.getARIMA_Params(df_train_trans, n_Seasons*2 ,n_alpha, dict_stat_ind, dict_results)
     # === 5. Get Optimal ARIMA Model ===========================================================
     #need to add one for detrend
 

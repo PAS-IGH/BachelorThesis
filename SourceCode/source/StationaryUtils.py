@@ -71,13 +71,25 @@ def checkStatADFKPSS (df_DataSeries, s_ARParam, s_alpha, dict_results):
     kpssResult = kpssWrapper(df_DataSeries, s_ARParam, s_alpha, dict_results)
 
     if not adfRes and kpssResult:
-        # === Save results =======================
-        dict_results["stationary_status"] = {
-            "stationary_status" : "stationary",
-            "stat_type": "stationary"
-        }
-        str_stat_type = "stationary"
-        #=========================================
+
+        if s_ARParam == "c":
+
+            # === Save results =======================
+            dict_results["stationary_status"] = {
+                "stationary_status" : "stationary",
+                "stat_type": "stationary"
+            }
+            #=========================================
+            str_stat_type = "stationary"
+        elif s_ARParam == "ct":
+            # === Save results =======================
+            dict_results["stationary_status"] = {
+                "stationary_status" : "non-stationary",
+                "stat_type": "trend"
+            }
+            #=========================================
+            str_stat_type = "trend"
+            
     elif adfRes and not kpssResult:
         # === Save results =======================
         dict_results["stationary_status"] = {
