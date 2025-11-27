@@ -208,7 +208,7 @@ def plotOutputsTSA(l_TimeSeries_Result_Base,l_TimeSeries_Result_Anomaly,script_d
     stl_fitted_anomaly = l_TimeSeries_Result_Anomaly["stl_train"]
 
             # === Plot Base STL ========
-    fig, axes_base = plt.subplots(2, 1, figsize=(10,6), sharex=True)
+    fig, axes_base = plt.subplots(2, 1, figsize=(6,4), sharex=True)
     axes_base[0].plot(tsa_base_train_trans.index, stl_fitted_base.observed, color="black")
     axes_base[0].set_ylabel("Torque[Nm]")
     axes_base[0].set_title("STL of Transformed Base Training Set")
@@ -229,7 +229,7 @@ def plotOutputsTSA(l_TimeSeries_Result_Base,l_TimeSeries_Result_Anomaly,script_d
     plt.savefig(f"{script_dir.parent}/output/{str_FolderName}/plots/STL_Base.pdf", bbox_inches="tight")
 
             # === Plot Anomaly STL ======
-    fig, axes_base = plt.subplots(2, 1, figsize=(10,6), sharex=True)
+    fig, axes_base = plt.subplots(2, 1, figsize=(6,4), sharex=True)
     axes_base[0].plot(tsa_anomaly_train_trans.index, stl_fitted_anomaly.observed, color="black")
     axes_base[0].set_ylabel("Torque[Nm]")
     axes_base[0].set_title("STL of Transformed Anomaly Training Set")

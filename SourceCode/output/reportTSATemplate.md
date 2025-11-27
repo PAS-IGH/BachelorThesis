@@ -39,7 +39,7 @@
 
 ---
 
-## 5. Final Model Diagnostics**
+## 5. Final Model Diagnostics
 
 - **Number of Observation:** {n_obs}
 - **AIC:** {optimal_model_aic}
