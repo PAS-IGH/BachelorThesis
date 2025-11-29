@@ -47,7 +47,8 @@ def run(str_path_undamaged, str_path_damaged, sDepVar, sRenameVar, n_Seasons, n_
     outDetect_result_sched_maint_imme  = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, concat_series_sched_maint_imme)
     outDetect_result_sched_crit  = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, concat_series_sched_crit)
 
-    out.output(tsa_undmg_results, tsa_dmg_results,t_model_detector_eval, [outDetect_result_sched_main, outDetect_result_sched_maint_asap, outDetect_result_sched_maint_imme, outDetect_result_sched_crit],script_dir, str_FolderName)
+    # reinstate later
+    # out.output(tsa_undmg_results, tsa_dmg_results,t_model_detector_eval, [outDetect_result_sched_main, outDetect_result_sched_maint_asap, outDetect_result_sched_maint_imme, outDetect_result_sched_crit],script_dir, str_FolderName)
 
 def doTimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
 
