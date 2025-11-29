@@ -6,23 +6,39 @@ from . import ARIMAUtils as arimaUtil
 from . import OutlierDetectorUtil as outDetUtil
 
 def getEvaluationResults(df_test_base_results, df_test_ano_results):
+    """
+    A function for evaluation outlier detector performance based on a confusion matrix.
+    This function performs the following operations:
+        1. Gets the base and anomalous forecast based on the length of their respective test sets
+        2. Gets the base and anomalous forecast based on the length of their non-respective test sets
+        3. Computes out of sample MAE values with these forecasts to evaluate forecasting performance and validate outlier detection by forecasting error
+        4. Constructs a ground truth label set with a concatenated set of base and anomalous test sets
+        5. Obtains the predicted labels via application of the detector on the test sets and concatenates the produced labels
+        6. Constructs the confusion matrix based on ground truth and predicted labels
+        7. Saves the result in a dict object and returns it along MAE values
+    Args:
+        df_test_base_results (dict): A dictionary containing information from the previous time series analysis steps of the base process
+        df_test_ano_results (dict): A dictionary containing information from the previous time series analysis steps of the anomalous process
+    Returns:
+        dict_results (dict): A dictionary containing the MAE values and confusion matrix, with the computed recall and precision
+    """
 
-    # === base
+    # base
     df_test_base_obs = df_test_base_results["test_set"]
     a_forecast_base = arimaUtil.getForecast(df_test_base_results["fitted_optimal_model"], len(df_test_base_obs), df_test_base_results["train_trans_set"]["opt_lambda"])
-    # === anomaly 
+    # anomaly 
     df_test_anom_obs = df_test_ano_results["test_set"]
     a_forecast_ano = arimaUtil.getForecast(df_test_ano_results["fitted_optimal_model"], len(df_test_anom_obs), df_test_ano_results["train_trans_set"]["opt_lambda"])
-    #00 forecast to the length of the other hand in case of differently lengthed observations
+    # additionally forecast to the length of the other procesh in case of differently sized sets
     a_forecast_base_for_ano = arimaUtil.getForecast(df_test_base_results["fitted_optimal_model"], len(df_test_anom_obs), df_test_base_results["train_trans_set"]["opt_lambda"])
     a_forecast_ano_for_base = arimaUtil.getForecast(df_test_ano_results["fitted_optimal_model"], len(df_test_base_obs), df_test_ano_results["train_trans_set"]["opt_lambda"])
     # mae base to base
     n_MAE_base_base = mean_absolute_error(df_test_base_obs, a_forecast_base) *100
-    #mae anomaly to anomaly
+    # mae anomaly to anomaly
     n_MAE_ano_ano = mean_absolute_error(df_test_anom_obs, a_forecast_ano) * 100
-    #mae base to anomaly
+    # mae base to anomaly
     n_MAE_base_ano = mean_absolute_error(df_test_base_obs, a_forecast_ano_for_base) * 100
-    #mae anomaly to base
+    # mae anomaly to base
     n_MAE_ano_base = mean_absolute_error(df_test_anom_obs, a_forecast_base_for_ano) *100
 
 

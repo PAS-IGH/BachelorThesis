@@ -19,12 +19,12 @@ def getARIMA_Params (df_data_series, n_lags, n_alpha, dict_stat, dict_results, d
         n_alpha (float): A floating point number indicating the alpha value
         dict_stat (dict): A dictionary containing information regrarding stationary type
         dict_results (dict): A dictionary containing information of previous time series analysis steps
-        df_trend_series(pandas.DataSeries): A series containing the trend values for detrending
+        df_trend_series (pandas.DataSeries): A series containing the trend values for detrending
     Returns:
         tuple (p,d,q):
-            p(int): AR(p) parameter;
-            d(int): Differencing parameter;
-            q(int): MA(q) parameter;
+            p (int): AR(p) parameter;
+            d (int): Differencing parameter;
+            q (int): MA(q) parameter;
     """
 
     if dict_stat["b_Difference"]:  
@@ -81,9 +81,9 @@ def getDiffParam(n_decay_acf , n_decay_pacf):
         3. Returns the differencing parameter
     Args:
         n_decay_acf (float): The decay rate of the acf plot
-        n_decay_pacf(float): The decay rate of the pacf plot
+        n_decay_pacf (float): The decay rate of the pacf plot
     Returns:
-        n_param_d(int), n_param_d_2(int): Differencing parameter of order one and two
+        n_param_d (int), n_param_d_2 (int): Differencing parameter of order one and two
     """
     n_param_d = 1 
     if n_decay_acf < 0.1 and n_decay_pacf < 0.1:
@@ -100,15 +100,15 @@ def getARMA_Param (t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf,  t_conf_int_
         2. Applies the getMinLagThresholds() function with the previous result to get the minimum cutoff threshold
         3. Applies get_p_q() function with the previous result to estimate p and q parameters for ARMA(p,q)
     Args:
-        t_corr_val_acf(numpy.array): Array containing the acf values
-        t_conf_int_acf(numpy.array): Array containing the acf confidence intervals 
-        t_corr_val_pacf(numpy.array): Array containing the pacf values
-        t_conf_int_pacf(numpy.array): Array containing the pacf confidence intervals
+        t_corr_val_acf (numpy.array): Array containing the acf values
+        t_conf_int_acf (numpy.array): Array containing the acf confidence intervals 
+        t_corr_val_pacf (numpy.array): Array containing the pacf values
+        t_conf_int_pacf (numpy.array): Array containing the pacf confidence intervals
         dict_results (dict): A dictionary containing information of previous time series analysis steps
     Returns:
-        tuple(p,q): 
-            p(int): AR(p) parameter;
-            q(int): MA(q) parameter; 
+        tuple (p,q): 
+            p (int): AR(p) parameter;
+            q (int): MA(q) parameter; 
     """
     return get_p_q(getMinLagThresholds(calcTresholds(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf,  t_conf_int_pacf), dict_results))
 
@@ -123,9 +123,9 @@ def get_p_q (df_minLag) :
     Args:
         df_minLag (pandas.DataFrame): DataFrame containing lags, cutoff values and plot type as derived by the minimum cutoff lag
     Returns:
-        tuple(p,q): 
-            p(int): AR(p) parameter;
-            q(int): MA(q) parameter; 
+        tuple (p,q): 
+            p (int): AR(p) parameter;
+            q (int): MA(q) parameter; 
     """
     if df_minLag["Plot_Type"][0] == "ACF":
         b_AR = False
@@ -200,9 +200,9 @@ def getMinLagThresholds(df_thresholds, dict_results):
         2. Identifies its plot type (ACF or PACF)
         3. Filters the given cutoff thresholds by their plot type and returns the filtered set
     Args:
-        df_thresholds(pandas.DataFrame): A dataframe containing cutoff thresholds up to lag two for both plot types (ACF, PACF)
+        df_thresholds (pandas.DataFrame): A dataframe containing cutoff thresholds up to lag two for both plot types (ACF, PACF)
     Returns:
-        df_filtered_lags(pandas.DataFrame): Filtered dataframe for estimating p and q values following Tran and Reed's approach
+        df_filtered_lags (pandas.DataFrame): Filtered dataframe for estimating p and q values following Tran and Reed's approach
     """
     n_min_row = df_thresholds.loc[df_thresholds["Cut_T_Value"].idxmin()] #gets the row with the minimum cutoff threshold
     s_plot_type = n_min_row["Plot_Type"]
@@ -224,10 +224,10 @@ def calcTresholds(t_corr_val_acf, t_conf_int_acf, t_corr_val_pacf,  t_conf_int_p
         3. Appends the result as a dictionary to a list 
         4. Returns the list of cutoff thresholds in the form of a dataframe 
     Args:
-        t_corr_val_acf(numpy.array): Array containing the acf values
-        t_conf_int_acf(numpy.array): Array containing the acf confidence intervals 
-        t_corr_val_pacf(numpy.array): Array containing the pacf values
-        t_conf_int_pacf(numpy.array): Array containing the pacf confidence intervals
+        t_corr_val_acf (numpy.array): Array containing the acf values
+        t_conf_int_acf (numpy.array): Array containing the acf confidence intervals 
+        t_corr_val_pacf (numpy.array): Array containing the pacf values
+        t_conf_int_pacf (numpy.array): Array containing the pacf confidence intervals
     Returns:
         (pandas.DataFrame): A dataframe with the cutoff thresholds up to lag two for both ACF and PACF
     """
@@ -267,8 +267,8 @@ def getDecayRate(t_corr_val,t_conf_int):
         1. Gets the lag before correlation becomes insignificant
         2. Applies Tran and Reed's decay rate formula
     Args:
-        t_corr_val(numpy.array): Array containing the autocorrelation values
-        t_conf_int(numpy.array): Array containing the autocorrelation confidence intervals
+        t_corr_val (numpy.array): Array containing the autocorrelation values
+        t_conf_int (numpy.array): Array containing the autocorrelation confidence intervals
     Returns:
         (float): The decay rate
     """
@@ -292,8 +292,8 @@ def getLagBefCutoff(t_corr_val,t_conf_int):
         2. Subtracts the correlation value from the upper confidence interval at a lag k
         3. As soon as the resulting value falls below the margin of error the previous lag (ergo k - 1) is selected and returned
     Args:
-        t_corr_val(numpy.array): Array containing the autocorrelation values
-        t_conf_int(numpy.array): Array containing the autocorrelation confidence intervals
+        t_corr_val (numpy.array): Array containing the autocorrelation values
+        t_conf_int (numpy.array): Array containing the autocorrelation confidence intervals
     Returns:
         (int): The cutoff lag 
     """

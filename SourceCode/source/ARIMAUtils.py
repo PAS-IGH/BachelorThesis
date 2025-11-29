@@ -3,19 +3,18 @@ from statsmodels.tsa.arima.model import ARIMA, ARIMAResults
 from coreforecast.scalers import inv_boxcox
 from statsmodels.tsa.forecasting.stl import STLForecast
 
-# def getForecast(inverseBoxCoxLmabda fitted model)
 def getOptimalModel(df_series, p, d, q, dict_results):
     """
-    Gets the optimal model based on given params and ljung box test
-    This method performs the following operations:
-        1. Based on paramater decides which model to fit via a simple grid search
+    A Wrapper function for obtaining the optimal ARIMA model.
+    This function performs the following operations:
+        1. Chooses a model selection implementation based on the given p and q parameters
     Args:
-        df_series(pandas.DataSeries): The data upon which the model is supposed to be fitted
+        df_series (pandas.DataSeries): The data upon which the model is supposed to be fitted
         p (int): An integer dictating the AR part of ARIMA
         d (int): An integer dictating the differencing part of ARIMA
         q (int): An integer dictating the MA part of ARIMA
     Returns:
-        An optimally fitted model
+        fitted_model (statsmodels.tsa.arima.model.ARIMAResults): The fitted optimal model
     """
     if p > 0 and q == 0:
         fitted_model = fitAR(df_series, p, d, dict_results)["model"]
@@ -29,21 +28,21 @@ def getOptimalModel(df_series, p, d, q, dict_results):
 
 def fitAR(df_series, p, d, dict_results):
     """
-    Gets the optimal model based on given AR params and ljung box test.
-    This method performs the following operations:
-        1. Based on paramater builds the appropriate +-1 range and loops through that range
-        2. Checks with ARIMAResult.test_serial_correlation(method="ljungbox") if the p-value is freater than 0.05
-        3. If that condition is fullfilled add to a list a dictionary with the order, aic value and model
-        4. Check the AIC values in the model list with one another and take the item with the lowest AIC 
+    Obtains the optimal model based on the given AR parameter and Ljung-Box test.
+    This function performs the following operations:
+        1. Builds a range based on the estimated parameters ranging from one below and two above the esimtation (range end is exclusive)
+        2. Qualifies a model based on its Ljung-Box p-value
+        3. Adds the model along order, aic and Ljung-Box p-value to a list if it qualifies 
+        4. Compares the AIC scores of the models within the list to determine the optimal one and return it
     Args:
-        df_series(pandas.DataSeries): The data upon which the model is supposed to be fitted
+        df_series (pandas.DataSeries): The data upon which the model is supposed to be fitted
         p (int): An integer dictating the AR part of ARIMA
         d (int): An integer dictating the differencing part of ARIMA
     Returns:
-        An optimally fitted AR model
+        best_model (statsmodels.tsa.arima.model.ARIMAResults): The fitted optimal AR model
     """
     p_range = range(max(0, p - 1), p + 3)
-    good_models = [] #models whose ljung box pvalue ar not below 0.05
+    good_models = [] 
     dict_results["models"] = []
     for i in p_range:
         if i==0:
@@ -79,27 +78,27 @@ def fitAR(df_series, p, d, dict_results):
     if not good_models:
         print("nothing found AR")
     else:
-        best_model = min(good_models, key=lambda x: x["aic"])
+        best_model = min(good_models, key=lambda x: x["aic"]) #lowest AIC score
         return best_model
     
 def fitMA(df_series,d, q, dict_results):
 
     """
-    Gets the MA optimal model based on given MA params and ljung box test.
-    This method performs the following operations:
-        1. Based on paramater builds the appropriate +-1 range and loops through that range
-        2. Checks with ARIMAResult.test_serial_correlation(method="ljungbox") if the p-value is freater than 0.05
-        3. If that condition is fullfilled add to a list a dictionary with the order, aic value and model
-        4. Check the AIC values in the model list with one another and take the item with the lowest AIC 
+    Obtains the optimal model based on the given MA parameter and Ljung-Box test.
+    This function performs the following operations:
+        1. Builds a range based on the estimated parameters ranging from one below and two above the esimtation (range end is exclusive)
+        2. Qualifies a model based on its Ljung-Box p-value
+        3. Adds the model along order, aic and Ljung-Box p-value to a list if it qualifies 
+        4. Compares the AIC scores of the models within the list to determine the optimal one and return it
     Args:
-        df_series(pandas.DataSeries): The data upon which the model is supposed to be fitted
-        d (int): An integer dictating the differencing part of ARIMA
+        df_series (pandas.DataSeries): The data upon which the model is supposed to be fitted
         q (int): An integer dictating the MA part of ARIMA
+        d (int): An integer dictating the differencing part of ARIMA
     Returns:
-        An optimally fitted MA model
+        best_model (statsmodels.tsa.arima.model.ARIMAResults): The fitted optimal MA model
     """
     q_range = range(max(0, q - 1), q + 3)
-    good_models = [] #models whose ljung box pvalue ar not below 0.05
+    good_models = [] 
     dict_results["models"] = []
     for i in q_range:
         if i==0:
@@ -137,25 +136,25 @@ def fitMA(df_series,d, q, dict_results):
     if not good_models:
         print("nothing found MA")
     else:
-        best_model = min(good_models, key=lambda x: x["aic"])
+        best_model = min(good_models, key=lambda x: x["aic"])# lowest AIC score wins
         return best_model
     
 def fitARIMA(df_series,p, d, q, dict_results):
 
     """
-    Gets the optimal model based on given ARMA params and ljung box test.
-    This method performs the following operations:
-        1. Based on paramaters builds the appropriate +-1 range and loops through that range
-        2. Checks with ARIMAResult.test_serial_correlation(method="ljungbox") if the p-value is freater than 0.05
-        3. If that condition is fullfilled add to a list a dictionary with the order, aic value and model
-        4. Check the AIC values in the model list with one another and take the item with the lowest AIC 
+    Obtains the optimal model based on the given ARIMA parameter and Ljung-Box test.
+    This function performs the following operations:
+        1. Builds a range based on the estimated parameters ranging from one below and two above the esimtation (range end is exclusive)
+        2. Qualifies a model based on its Ljung-Box p-value
+        3. Adds the model along order, aic and Ljung-Box p-value to a list if it qualifies 
+        4. Compares the AIC scores of the models within the list to determine the optimal one and return it
     Args:
-        df_series(pandas.DataSeries): The data upon which the model is supposed to be fitted
+        df_series (pandas.DataSeries): The data upon which the model is supposed to be fitted
         p (int): An integer dictating the AR part of ARIMA
         d (int): An integer dictating the differencing part of ARIMA
         q (int): An integer dictating the MA part of ARIMA
     Returns:
-        An optimally fitted ARMA model
+        best_model (statsmodels.tsa.arima.model.ARIMAResults): The fitted optimal ARIMA model
     """
     p_range = range(max(0, p - 1), p + 3) 
     q_range = range(max(0, q - 1), q + 3)
@@ -203,18 +202,17 @@ def getForecast(ARIMAResults_fitted,fore_length, n_lambda = None):
     #if it has a lambda then use inv boxcox otherwise just forecast
 
     """
-    Generates a forecast with a given length and detransforms the data if necessary
-    This method performs the following operations:
+    Generates a forecast with a given length and detransforms the data if necessary.
+    This function performs the following operations:
         1. Takes the fitted model and forecasts up to a given length
         2. Applies inverse boxcox if necessary
 
     Args:
         ARIMAResults_fitted (statsmodels.tsa.arima.model.ARIMAResults): A fitted ARIMA model
-        fore_length(int): The length of the forecast
-        n_lambda(float): A floating point to detransform a foregone transformation of the data
+        fore_length (int): The length of the forecast
+        n_lambda (float): A floating point to detransform a foregone transformation of the data
     Returns:
-        An array containing the forecast for fore_length steps
-
+        (np.ndarray): An array containing a forecast of fore_length steps
     """
 
     if n_lambda:

@@ -1,7 +1,3 @@
-# This module provides
-#       - A method identifying the highest score provided by comparing the forecast of a fitted model to the actual observations of a set of anomalous
-#         observations
-#       - A method detecting with said z-score the an ongoing or statically provided process to detect anomalies based on that score
 from statsmodels.robust.scale import mad
 import numpy as np
 from . import ARIMAUtils as arimaUtil
