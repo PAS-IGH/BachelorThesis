@@ -1,4 +1,7 @@
 
+"""
+Provides functions for selecting the optimal model with a grid search based on estimated ARIMA parameters.
+"""
 from statsmodels.tsa.arima.model import ARIMA, ARIMAResults
 from coreforecast.scalers import inv_boxcox
 from statsmodels.tsa.forecasting.stl import STLForecast
@@ -30,7 +33,7 @@ def fitAR(df_series, p, d, dict_results):
     """
     Obtains the optimal model based on the given AR parameter and Ljung-Box test.
     This function performs the following operations:
-        1. Builds a range based on the estimated parameters ranging from one below and two above the esimtation (range end is exclusive)
+        1. Builds a range based on the estimated parameters ranging from one below and two above the estimtation (range end is exclusive)
         2. Qualifies a model based on its Ljung-Box p-value
         3. Adds the model along order, aic and Ljung-Box p-value to a list if it qualifies 
         4. Compares the AIC scores of the models within the list to determine the optimal one and return it
@@ -86,7 +89,7 @@ def fitMA(df_series,d, q, dict_results):
     """
     Obtains the optimal model based on the given MA parameter and Ljung-Box test.
     This function performs the following operations:
-        1. Builds a range based on the estimated parameters ranging from one below and two above the esimtation (range end is exclusive)
+        1. Builds a range based on the estimated parameters ranging from one below and two above the estimtation (range end is exclusive)
         2. Qualifies a model based on its Ljung-Box p-value
         3. Adds the model along order, aic and Ljung-Box p-value to a list if it qualifies 
         4. Compares the AIC scores of the models within the list to determine the optimal one and return it
@@ -142,9 +145,9 @@ def fitMA(df_series,d, q, dict_results):
 def fitARIMA(df_series,p, d, q, dict_results):
 
     """
-    Obtains the optimal model based on the given ARIMA parameter and Ljung-Box test.
+    Obtains the optimal model based on the given ARIMA parameters and Ljung-Box test.
     This function performs the following operations:
-        1. Builds a range based on the estimated parameters ranging from one below and two above the esimtation (range end is exclusive)
+        1. Builds a range based on the estimated parameters ranging from one below and two above the estimtation (range end is exclusive)
         2. Qualifies a model based on its Ljung-Box p-value
         3. Adds the model along order, aic and Ljung-Box p-value to a list if it qualifies 
         4. Compares the AIC scores of the models within the list to determine the optimal one and return it
@@ -206,11 +209,10 @@ def getForecast(ARIMAResults_fitted,fore_length, n_lambda = None):
     This function performs the following operations:
         1. Takes the fitted model and forecasts up to a given length
         2. Applies inverse boxcox if necessary
-
     Args:
         ARIMAResults_fitted (statsmodels.tsa.arima.model.ARIMAResults): A fitted ARIMA model
         fore_length (int): The length of the forecast
-        n_lambda (float): A floating point to detransform a foregone transformation of the data
+        n_lambda (float): A floating point number to detransform a foregone transformation of the data
     Returns:
         (np.ndarray): An array containing a forecast of fore_length steps
     """

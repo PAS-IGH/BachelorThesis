@@ -1,3 +1,8 @@
+"""
+Provides functions for estimating ARIMA parameters based on the Tran and Reed approach http://ieeexplore.ieee.org/document/1271185/
+"""
+
+
 from statsmodels.graphics.tsaplots import acf, pacf
 import numpy as np
 import pandas as pd
@@ -6,12 +11,12 @@ import math
 def getARIMA_Params (df_data_series, n_lags, n_alpha, dict_stat, dict_results, df_trend_series = None):
 
     """
-    Returns the estimated parameters needed for ARIMA modelling based on the stationary type.
+    Returns the estimated parameters needed for ARIMA modelling based on stationary type.
     This function performs the following operations:
         1. Decides based on the provided stationary type how to estimate the parameters
-        2. Gets the acf and pacf values as well as the confidence intervalls based on Barletts formula
+        2. Gets the acf and pacf values as well as the confidence intervalls based on Barlett's formula
         3. Obtains the differencing parameter based on the computed decay rate of the acf and pacf
-        4. Gets the p and q params by applying Tran and Reeds method
+        4. Gets the p and q params by applying Tran and Reeds approach
         5. Returns ARIMA(p,d,q) parameters
     Args:
         df_data_series (pandas.DataSeries): A series which ARIMA modelling is applied to
@@ -77,13 +82,13 @@ def getDiffParam(n_decay_acf , n_decay_pacf):
     In order to avoid overdifferencing the series is differenced up to a maximum of two times.
     This function performs the following operations:
         1. Sets the initial value for the differencing parameter to one, as this method is called only in a differencing case
-        2. Computes the decay rates of both acf and pacf, followng Tran and Reed's method and increases the value of the differencing parameter accordingly
+        2. Computes the decay rates of both acf and pacf, following Tran and Reed's method and increases the value of the differencing parameter accordingly
         3. Returns the differencing parameter
     Args:
         n_decay_acf (float): The decay rate of the acf plot
         n_decay_pacf (float): The decay rate of the pacf plot
     Returns:
-        n_param_d (int), n_param_d_2 (int): Differencing parameter of order one and two
+        n_param_d (int), n_param_d_2 (int): Differencing parameter of order one or two
     """
     n_param_d = 1 
     if n_decay_acf < 0.1 and n_decay_pacf < 0.1:
@@ -118,7 +123,7 @@ def get_p_q (df_minLag) :
     Estimates the p and q parameters based on the minimum cutoff threshold, following Tran and Reed's approach.
     This function performs the following operations:
         1. Obtains the correct model type based on plot type
-        2. Acquires the cutoff threshold values as well as their rounded down counterparts, from the minimum cutoff threshold
+        2. Acquires the cutoff threshold values as well as their rounded down counterparts
         3. Returns a tuple with the p and q params, determined by Tran and Reed's approach
     Args:
         df_minLag (pandas.DataFrame): DataFrame containing lags, cutoff values and plot type as derived by the minimum cutoff lag
