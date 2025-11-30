@@ -45,14 +45,14 @@ def getTrainAndTestSet(dfData, nObsPerSeason, depVar, sRenameDepVar, bGerman, n_
           sDepVar (str): The name of the desired dependent variable
           sRenamDepVar (str): String for renaming the desired dependent variable
           bGerman (bool): Boolean value in case of German floating point numbers
-
+          n_Split (float): A number indicating the training/test split
      Returns:
           tuple (df_train_set, df_test_set): 
                df_train_set (pandas.DataFrame): The training set
                df_test_set (pandas.DataFrame): The test set
      """
      n_seasons = int(len(dfData) / nObsPerSeason) # get the amount of seasons
-     n_seasons_train = int(math.floor(n_seasons * n_Split)) #get the amount of seasons for training set)
+     n_seasons_train = int(math.floor(n_seasons * n_Split)) #get the amount of seasons for training set
      n_observ_train = n_seasons_train * nObsPerSeason #get the amount of observations for train set
 
      #max index for test set is n_observ_train - 1
