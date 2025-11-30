@@ -5,7 +5,24 @@ import math
 import pandas as pd
 
 
-def getAnomalies(df_baseline_fore, df_anomaly_fore, df_observ, dict_results): 
+def getAnomalies(df_baseline_fore, df_anomaly_fore, df_observ, dict_results):
+
+    """
+    A function for detecting anomalies based on forecast error to the medians of base and anomalous forecast.
+    This function performs the following operations:
+        1. Obtains the absolute errors between an observation set and the medians of a base and anomalous forecast
+        2. Detects an anomalie if the difference between the anomalous median forecast and the observation set is less than with the base foreacast
+        3. Locates the indices of the anomalies and constructs a band based on the lowest anomaly found
+        4. Saves the results and returns them
+    Args:
+        df_baseline_fore (df.DataSeries): A forecast based on the modelled base process
+        df_anomaly_fore (df.DataSeries): A forecast based on the modelled forecast process
+        df_observ (df.DataSeries): An observation set which needs its anomalies detected
+        dict_results (dict): A dictionary containing information of previous time series analysis steps
+    Returns:
+        df_anomalies (pandas.DataFrame): A dataframe containing the anomaly indices
+    """
+ 
     # Get the errors from the median of the forecast to the given observation 
     df_base_err = (df_observ - np.median(df_baseline_fore)).abs()
 
@@ -39,6 +56,19 @@ def getAnomalies(df_baseline_fore, df_anomaly_fore, df_observ, dict_results):
 
 def getRecommendation(df_anomalies, df_observ, dict_results):
 
+    """
+    A function for presenting a recommendation based on the relative amount of anomalies detected.
+    This function performs the following operations:
+        1. Computes a percentage value based on anomalies observed in an observation set
+        2. Recommends a maintenance strategy based on the percentage calculated
+        3. Returns the recommendation
+    Args:
+        df_anomalies (pandas.DataSeries): A series containing the detected anomalies of an observation set
+        df_observ (pandas.DataSeries): A series containing the observation set on which the detector was used upon
+
+    Returns:
+        dict_results (dict): A dictionary containing information of previous time series analysis steps
+    """
     failure_percentage = len(df_anomalies) / len(df_observ)
     str_recommendation = ""
 
@@ -51,8 +81,10 @@ def getRecommendation(df_anomalies, df_observ, dict_results):
     elif failure_percentage >= 0.4:
         str_recommendation = "Critical operations failure imminent"
     
+    # === Save Results =========
     dict_results["str_recommendation"] = str_recommendation
     dict_results["failure_percentage"] = round(failure_percentage * 100, 6) 
+    # ==========================
 
     return str_recommendation
 

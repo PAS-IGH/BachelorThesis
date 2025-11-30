@@ -4,12 +4,31 @@ import pandas as pd
 import os
 
 def output(l_TimeSeries_Result_Base,l_TimeSeries_Result_Anomaly,l_Evaluation, l_Outlier_Results,script_dir, str_FolderName =None):
+
+    """
+    A wrapper function containing output methods for the results of the time series analysis of the base and anomalous process, as well as of the outlier detector.
+
+    This function performs the following operations:
+        1. Executes the plotting of the results of the base and anomalous time series analysis
+        2. Executes the writing functions for the results of the base and anomalous time series analysis
+        3. Executes the plotting of the results of the outlier simulations
+        4. Executes the writing process of the outlier detection evaluation
+    Args:
+        l_TimeSeries_Result_Base (dict): A dictionary containing information from the time series analysis of the base process
+        l_TimeSeries_Result_Anomaly (dict): A dictionary containing information from the time series analysis of the anomalous process
+        l_Evaluation (dict): A dictionary containing the results of the outlier detector evaluation
+        l_Outlier_Results (dict): A dictionary containing the results of the outlier detector simulation
+        script_dir (str): A string pointing to the right project directory
+        str_FolderName (str): A string for naming a folder where the output can be stored
+    """
+
+
     #=== Time Series Result=====================================
 
     plotOutputsTSA(l_TimeSeries_Result_Base,l_TimeSeries_Result_Anomaly, script_dir, str_FolderName)
     # === Time Series Analysis output
 
-    writeOutputsTSA(l_TimeSeries_Result_Base, script_dir,str_FolderName, "Base" )
+    writeOutputsTSA(l_TimeSeries_Result_Base, script_dir,str_FolderName, "Base")
     writeOutputsTSA(l_TimeSeries_Result_Anomaly, script_dir,str_FolderName, "Anomaly")
 
     # === Outlier Results =============================================================
@@ -20,6 +39,19 @@ def output(l_TimeSeries_Result_Base,l_TimeSeries_Result_Anomaly,l_Evaluation, l_
 
 
 def writeEval(l_Evaluation, script_dir, str_FolderName):
+
+    """
+    A function for applying the markdown template in order to write out the outlier detection evaluation.
+    This function performs the following operations:
+        1. Obtains the appropriate template
+        2. Constructs a model for the fields needed in the template and inserts the results
+        3. Saves the markdown file 
+
+    Args:
+        l_Evaluation (dict): A dictionary containing the results of the outlier detector evaluation        
+        script_dir (str): A string pointing to the right project directory
+        str_FolderName (str): A string for naming a folder where the output can be stored
+    """
 
     with open(f"{script_dir.parent}/output/reportEvaluationTemplate.md", "r", encoding="utf-8") as f:
         template_text = f.read()
@@ -48,9 +80,24 @@ def writeEval(l_Evaluation, script_dir, str_FolderName):
 
 def writeOutputsTSA(l_TimeSeries_Results, script_dir, str_FolderName, str_tsa_name):
 
+    """
+    A function for applying the markdown template in order to write out the time series analysis results.
+    This function performs the following operations:
+        1. Obtains the appropriate template
+        2. Constructs a model for the fields needed in the template and inserts the results
+        3. Saves the markdown file 
+
+    Args:
+        l_TimeSeries_Results (dict): A dictionary containing information from the time series analysis of a process    
+        script_dir (str): A string pointing to the right project directory
+        str_FolderName (str): A string for naming a folder where the output can be stored
+        str_tsa_name (str): A string containing the string to identify the underlying process
+    """
+
     with open(f"{script_dir.parent}/output/reportTSATemplate.md", "r", encoding="utf-8") as f:
         template_text = f.read()
 
+    # construct strings and a proper table for displaying the results of the unit root tests
     dict_adf = l_TimeSeries_Results['adf_test_statistic']
     str_hypo_adf = "Failed to reject" if dict_adf["null_hypo"] else "Rejected" 
     adf_table_string = f"|ADF| {round(dict_adf['t_value'], 4)} | {round(dict_adf['critical_value'],6)} | {str_hypo_adf}|"
@@ -119,6 +166,19 @@ def writeOutputsTSA(l_TimeSeries_Results, script_dir, str_FolderName, str_tsa_na
 
 def writeOutputOutlierSim(l_Outlier_Results,script_dir, str_FolderName):
 
+    """
+    A function for applying the markdown template in order to write out the outlier simulation output.
+    This function performs the following operations:
+        1. Obtains the appropriate template
+        2. Constructs a model for the fields needed in the template and inserts the results
+        3. Saves the markdown file 
+
+    Args:
+        l_Outlier_Results (dict): A dictionary containing information of the outlier detection simulation  
+        script_dir (str): A string pointing to the right project directory
+        str_FolderName (str): A string for naming a folder where the output can be stored
+    """
+
     with open(f"{script_dir.parent}/output/reportOutlierSimTemplate.md", "r", encoding="utf-8") as f:
         template_text = f.read()
 
@@ -147,6 +207,19 @@ def writeOutputOutlierSim(l_Outlier_Results,script_dir, str_FolderName):
 
 def plotOutlierSim(l_Outlier_Results,script_dir, str_FolderName =None):
 
+    """
+    A function for plotting the outlier detector simulations.
+    This function performs the following operations:
+        1. Creates a figure and plots the medians of base and anomaly forecast
+        2. Plots the found anomalies
+        3. Creates and plots a no-anomaly area
+        4. Saves the output
+
+    Args:
+        l_Outlier_Results (dict): A dictionary containing information of the outlier detection simulation  
+        script_dir (str): A string pointing to the right project directory
+        str_FolderName (str): A string for naming a folder where the output can be stored
+    """
     for i in range(len(l_Outlier_Results)):
     # outlier simulation results
         test_outlier = l_Outlier_Results[i]
@@ -179,6 +252,22 @@ def plotOutlierSim(l_Outlier_Results,script_dir, str_FolderName =None):
         plt.close()
 
 def plotOutputsTSA(l_TimeSeries_Result_Base,l_TimeSeries_Result_Anomaly,script_dir, str_FolderName =None):
+    """
+    A function for plotting the results of the time series analysis pipeline.
+    This function performs the following operations:
+        1. Creates a figure, plots the base and anomalous observations and saves the figure
+        2. Creates a figure, plots the observation and trend component of the STL decomposition of both processes and saves the figure
+        3. Creates a figure, plots the one season forecast and saves the figure
+        4. Plots the results of heteroscedasticity, to be used for further improvements
+
+    Args:
+        l_TimeSeries_Result_Base (dict): A dictionary containing information from the time series analysis of the base process
+        l_TimeSeries_Result_Anomaly (dict): A dictionary containing information from the time series analysis of the anomalous process
+        script_dir (str): A string pointing to the right project directory
+        str_FolderName (str): A string for naming a folder where the output can be stored
+    """
+
+
     # === plot===
         # ====Base and Anomaly as well as their respective transformations ====
     tsa_base_original = pd.concat([l_TimeSeries_Result_Base["train_set"], l_TimeSeries_Result_Base["test_set"]]).reset_index(drop=True)

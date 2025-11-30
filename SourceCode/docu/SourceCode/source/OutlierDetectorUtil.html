@@ -57,138 +57,166 @@ SourceCode<wbr>.<a href="./../source.html">source</a><wbr>.OutlierDetectorUtil  
 
                         <label class="view-source-button" for="mod-OutlierDetectorUtil-view-source"><span>View Source</span></label>
 
-                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="c1"># This module provides</span>
-</span><span id="L-2"><a href="#L-2"><span class="linenos">  2</span></a><span class="c1">#       - A method identifying the highest score provided by comparing the forecast of a fitted model to the actual observations of a set of anomalous</span>
-</span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="c1">#         observations</span>
-</span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="c1">#       - A method detecting with said z-score the an ongoing or statically provided process to detect anomalies based on that score</span>
-</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">statsmodels.robust.scale</span><span class="w"> </span><span class="kn">import</span> <span class="n">mad</span>
-</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">ARIMAUtils</span> <span class="k">as</span> <span class="n">arimaUtil</span>
-</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
-</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a>
-</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a>
-</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="k">def</span><span class="w"> </span><span class="nf">getAnomalies</span><span class="p">(</span><span class="n">df_baseline_fore</span><span class="p">,</span> <span class="n">df_anomaly_fore</span><span class="p">,</span> <span class="n">df_observ</span><span class="p">,</span> <span class="n">dict_results</span><span class="p">):</span> 
-</span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a>    <span class="c1"># Get the errors from the median of the forecast to the given observation </span>
-</span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a>    <span class="n">df_base_err</span> <span class="o">=</span> <span class="p">(</span><span class="n">df_observ</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">df_baseline_fore</span><span class="p">))</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
-</span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a>
-</span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a>    <span class="c1"># Get the errors for the upper and lower bound by subtracting the median of the anomaly forecast from the observations and its inverted form</span>
-</span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a>    <span class="n">df_anomaly_err_pos</span> <span class="o">=</span> <span class="p">(</span><span class="n">df_observ</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">df_anomaly_fore</span><span class="p">))</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="c1"># Idea like the band for ACF and PACF</span>
-</span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a>    <span class="c1"># df_anomaly_err_neg = np.negative(df_anomaly_err_pos)</span>
-</span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a>
-</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a>    <span class="c1"># produces an array containing boolean for anomalies for each index where one happens to be based on being nearer to the error of the forecasted anomalous process</span>
-</span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a>    <span class="c1"># is_anomaly = (df_anomaly_err_pos &lt;= df_base_err) | (df_anomaly_err_neg &gt;= df_base_err) </span>
-</span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a>    <span class="n">is_anomaly</span> <span class="o">=</span> <span class="n">df_anomaly_err_pos</span> <span class="o">&lt;=</span> <span class="n">df_base_err</span>
-</span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a>    <span class="n">n_indices_anomalies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">is_anomaly</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-</span><span id="L-24"><a href="#L-24"><span class="linenos"> 24</span></a>
-</span><span id="L-25"><a href="#L-25"><span class="linenos"> 25</span></a>    <span class="c1"># create a data collection containing the band value for this observation</span>
-</span><span id="L-26"><a href="#L-26"><span class="linenos"> 26</span></a>    <span class="n">df_anomalies</span> <span class="o">=</span> <span class="n">df_observ</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">n_indices_anomalies</span><span class="p">]</span>
-</span><span id="L-27"><a href="#L-27"><span class="linenos"> 27</span></a>
-</span><span id="L-28"><a href="#L-28"><span class="linenos"> 28</span></a>    <span class="n">n_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">df_anomalies</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
-</span><span id="L-29"><a href="#L-29"><span class="linenos"> 29</span></a>    <span class="n">n_band_value_upper</span> <span class="o">=</span>  <span class="n">n_min</span>
-</span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a>    
-</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a>    <span class="n">df_band_values_base_fore_upper</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">n_band_value_upper</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_observ</span><span class="p">))</span>
-</span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a>    <span class="c1"># === Save Results =========</span>
-</span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;anomaly_bool&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">is_anomaly</span>
-</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;df_anomalies_indices&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_indices_anomalies</span>
-</span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;df_anomalies&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_anomalies</span>
-</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a>
-</span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;df_base_err&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_base_err</span>
-</span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;df_base_fore_band_values_upper&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_band_values_base_fore_upper</span>
-</span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;lowest_anomaly&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_band_value_upper</span>
+                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">statsmodels.robust.scale</span><span class="w"> </span><span class="kn">import</span> <span class="n">mad</span>
+</span><span id="L-2"><a href="#L-2"><span class="linenos">  2</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">ARIMAUtils</span> <span class="k">as</span> <span class="n">arimaUtil</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a>
+</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a>
+</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="k">def</span><span class="w"> </span><span class="nf">getAnomalies</span><span class="p">(</span><span class="n">df_baseline_fore</span><span class="p">,</span> <span class="n">df_anomaly_fore</span><span class="p">,</span> <span class="n">df_observ</span><span class="p">,</span> <span class="n">dict_results</span><span class="p">):</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a>
+</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="sd">    A function for detecting anomalies based on forecast error to the medians of base and anomalous forecast.</span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="sd">    This function performs the following operations:</span>
+</span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a><span class="sd">        1. Obtains the absolute errors between an observation set and the medians of a base and anomalous forecast</span>
+</span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a><span class="sd">        2. Detects an anomalie if the difference between the anomalous median forecast and the observation set is less than with the base foreacast</span>
+</span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a><span class="sd">        3. Locates the indices of the anomalies and constructs a band based on the lowest anomaly found</span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a><span class="sd">        4. Saves the results and returns them</span>
+</span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a><span class="sd">    Args:</span>
+</span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a><span class="sd">        df_baseline_fore (df.DataSeries): A forecast based on the modelled base process</span>
+</span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a><span class="sd">        df_anomaly_fore (df.DataSeries): A forecast based on the modelled forecast process</span>
+</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a><span class="sd">        df_observ (df.DataSeries): An observation set which needs its anomalies detected</span>
+</span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a><span class="sd">        dict_results (dict): A dictionary containing information of previous time series analysis steps</span>
+</span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a><span class="sd">    Returns:</span>
+</span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a><span class="sd">        df_anomalies (pandas.DataFrame): A dataframe containing the anomaly indices</span>
+</span><span id="L-24"><a href="#L-24"><span class="linenos"> 24</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-25"><a href="#L-25"><span class="linenos"> 25</span></a> 
+</span><span id="L-26"><a href="#L-26"><span class="linenos"> 26</span></a>    <span class="c1"># Get the errors from the median of the forecast to the given observation </span>
+</span><span id="L-27"><a href="#L-27"><span class="linenos"> 27</span></a>    <span class="n">df_base_err</span> <span class="o">=</span> <span class="p">(</span><span class="n">df_observ</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">df_baseline_fore</span><span class="p">))</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+</span><span id="L-28"><a href="#L-28"><span class="linenos"> 28</span></a>
+</span><span id="L-29"><a href="#L-29"><span class="linenos"> 29</span></a>    <span class="c1"># Get the errors for the upper and lower bound by subtracting the median of the anomaly forecast from the observations and its inverted form</span>
+</span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a>    <span class="n">df_anomaly_err_pos</span> <span class="o">=</span> <span class="p">(</span><span class="n">df_observ</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">df_anomaly_fore</span><span class="p">))</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="c1"># Idea like the band for ACF and PACF</span>
+</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a>    <span class="c1"># df_anomaly_err_neg = np.negative(df_anomaly_err_pos)</span>
+</span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a>
+</span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a>    <span class="c1"># produces an array containing boolean for anomalies for each index where one happens to be based on being nearer to the error of the forecasted anomalous process</span>
+</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a>    <span class="c1"># is_anomaly = (df_anomaly_err_pos &lt;= df_base_err) | (df_anomaly_err_neg &gt;= df_base_err) </span>
+</span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a>    <span class="n">is_anomaly</span> <span class="o">=</span> <span class="n">df_anomaly_err_pos</span> <span class="o">&lt;=</span> <span class="n">df_base_err</span>
+</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a>    <span class="n">n_indices_anomalies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">is_anomaly</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a>
+</span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a>    <span class="c1"># create a data collection containing the band value for this observation</span>
+</span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a>    <span class="n">df_anomalies</span> <span class="o">=</span> <span class="n">df_observ</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">n_indices_anomalies</span><span class="p">]</span>
 </span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a>
-</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a>    <span class="c1">#===========================</span>
-</span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a>    <span class="k">return</span> <span class="n">df_anomalies</span>
-</span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a>
-</span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a><span class="k">def</span><span class="w"> </span><span class="nf">getRecommendation</span><span class="p">(</span><span class="n">df_anomalies</span><span class="p">,</span> <span class="n">df_observ</span><span class="p">,</span> <span class="n">dict_results</span><span class="p">):</span>
-</span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a>
-</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a>    <span class="n">failure_percentage</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_anomalies</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_observ</span><span class="p">)</span>
-</span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a>    <span class="n">str_recommendation</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-</span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a>
-</span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a>    <span class="k">if</span> <span class="mf">0.2</span> <span class="o">&gt;</span> <span class="n">failure_percentage</span> <span class="o">&gt;=</span> <span class="mf">0.05</span><span class="p">:</span>
-</span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a>        <span class="n">str_recommendation</span> <span class="o">=</span> <span class="s2">&quot;Schedule maintenance as soon as possible&quot;</span>
-</span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a>    <span class="k">if</span> <span class="mf">0.3</span> <span class="o">&gt;</span> <span class="n">failure_percentage</span> <span class="o">&gt;=</span> <span class="mf">0.2</span><span class="p">:</span>
-</span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a>        <span class="n">str_recommendation</span> <span class="o">=</span> <span class="s2">&quot;Schedule maintenance&quot;</span>
-</span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a>    <span class="k">elif</span> <span class="mf">0.4</span> <span class="o">&gt;</span> <span class="n">failure_percentage</span> <span class="o">&gt;=</span> <span class="mf">0.3</span><span class="p">:</span>
-</span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a>        <span class="n">str_recommendation</span> <span class="o">=</span> <span class="s2">&quot;Schedule maintenance immediately&quot;</span>
-</span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a>    <span class="k">elif</span> <span class="n">failure_percentage</span> <span class="o">&gt;=</span> <span class="mf">0.4</span><span class="p">:</span>
-</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a>        <span class="n">str_recommendation</span> <span class="o">=</span> <span class="s2">&quot;Critical operations failure imminent&quot;</span>
-</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a>    
-</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;str_recommendation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">str_recommendation</span>
-</span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;failure_percentage&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">failure_percentage</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span> 
-</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a>
-</span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a>    <span class="k">return</span> <span class="n">str_recommendation</span>
-</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a>
-</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a>
-</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a>
-</span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a>
-</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a>
-</span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a>
+</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a>    <span class="n">n_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">df_anomalies</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+</span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a>    <span class="n">n_band_value_upper</span> <span class="o">=</span>  <span class="n">n_min</span>
+</span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a>    
+</span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a>    <span class="n">df_band_values_base_fore_upper</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">n_band_value_upper</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_observ</span><span class="p">))</span>
+</span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a>    <span class="c1"># === Save Results =========</span>
+</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;anomaly_bool&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">is_anomaly</span>
+</span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;df_anomalies_indices&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_indices_anomalies</span>
+</span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;df_anomalies&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_anomalies</span>
+</span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a>
+</span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;df_base_err&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_base_err</span>
+</span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;df_base_fore_band_values_upper&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_band_values_base_fore_upper</span>
+</span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;lowest_anomaly&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_band_value_upper</span>
+</span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a>
+</span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a>    <span class="c1">#===========================</span>
+</span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a>    <span class="k">return</span> <span class="n">df_anomalies</span>
+</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a>
+</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a><span class="k">def</span><span class="w"> </span><span class="nf">getRecommendation</span><span class="p">(</span><span class="n">df_anomalies</span><span class="p">,</span> <span class="n">df_observ</span><span class="p">,</span> <span class="n">dict_results</span><span class="p">):</span>
+</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a>
+</span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a><span class="sd">    A function for presenting a recommendation based on the relative amount of anomalies detected.</span>
+</span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a><span class="sd">    This function performs the following operations:</span>
+</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a><span class="sd">        1. Computes a percentage value based on anomalies observed in an observation set</span>
+</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a><span class="sd">        2. Recommends a maintenance strategy based on the percentage calculated</span>
+</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a><span class="sd">        3. Returns the recommendation</span>
+</span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a><span class="sd">    Args:</span>
+</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a><span class="sd">        df_anomalies (pandas.DataSeries): A series containing the detected anomalies of an observation set</span>
+</span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a><span class="sd">        df_observ (pandas.DataSeries): A series containing the observation set on which the detector was used upon</span>
 </span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a>
-</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a>
-</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>
-</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a>
-</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a>
-</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a>
+</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a><span class="sd">    Returns:</span>
+</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a><span class="sd">        dict_results (dict): A dictionary containing information of previous time series analysis steps</span>
+</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a>    <span class="n">failure_percentage</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_anomalies</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_observ</span><span class="p">)</span>
+</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a>    <span class="n">str_recommendation</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 </span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>
-</span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a>
-</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a>
-</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a>
-</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a>
-</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a>
-</span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a>
-</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a>
-</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a>
-</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a>
-</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a>
-</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a>
-</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a>
-</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a>
+</span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a>    <span class="k">if</span> <span class="mf">0.2</span> <span class="o">&gt;</span> <span class="n">failure_percentage</span> <span class="o">&gt;=</span> <span class="mf">0.05</span><span class="p">:</span>
+</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a>        <span class="n">str_recommendation</span> <span class="o">=</span> <span class="s2">&quot;Schedule maintenance as soon as possible&quot;</span>
+</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a>    <span class="k">if</span> <span class="mf">0.3</span> <span class="o">&gt;</span> <span class="n">failure_percentage</span> <span class="o">&gt;=</span> <span class="mf">0.2</span><span class="p">:</span>
+</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a>        <span class="n">str_recommendation</span> <span class="o">=</span> <span class="s2">&quot;Schedule maintenance&quot;</span>
+</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a>    <span class="k">elif</span> <span class="mf">0.4</span> <span class="o">&gt;</span> <span class="n">failure_percentage</span> <span class="o">&gt;=</span> <span class="mf">0.3</span><span class="p">:</span>
+</span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a>        <span class="n">str_recommendation</span> <span class="o">=</span> <span class="s2">&quot;Schedule maintenance immediately&quot;</span>
+</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a>    <span class="k">elif</span> <span class="n">failure_percentage</span> <span class="o">&gt;=</span> <span class="mf">0.4</span><span class="p">:</span>
+</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a>        <span class="n">str_recommendation</span> <span class="o">=</span> <span class="s2">&quot;Critical operations failure imminent&quot;</span>
+</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a>    
+</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a>    <span class="c1"># === Save Results =========</span>
+</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;str_recommendation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">str_recommendation</span>
+</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;failure_percentage&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">failure_percentage</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span> 
+</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a>    <span class="c1"># ==========================</span>
 </span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a>
-</span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a>
+</span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a>    <span class="k">return</span> <span class="n">str_recommendation</span>
 </span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a>
-</span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a><span class="c1"># def detectOutlier(dict_data_baseline, df_data_compare, n_max_score, n_jarque_bera = None):</span>
-</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="c1">#     # gets the mad scors of ongoing</span>
-</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a><span class="c1">#     #detects the percentage of anomalies of a given observation set</span>
-</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a><span class="c1">#     df_forecast_comp = arimaUtil.getForecast(dict_data_baseline[&quot;fitted_optimal_model&quot;], len(df_data_compare), dict_data_baseline[&quot;test_trans_set&quot;][&quot;opt_lamda&quot;])</span>
+</span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a>
+</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a>
+</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a>
+</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>
 </span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a>
-</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a><span class="c1">#     df_scores = getMADScores(df_forecast_comp, df_data_compare)</span>
+</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a>
 </span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a>
-</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a><span class="c1">#     df_filtered = df_scores[(df_scores &gt;= n_max_score).all(axis=1)]</span>
-</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a><span class="c1">#     n_percentage_anomalies = len(df_filtered) / len(df_data_compare) *100</span>
+</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>
+</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a>
 </span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>
-</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a><span class="c1">#     return n_percentage_anomalies </span>
+</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a>
 </span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a>
-</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a><span class="c1"># def getAnomalyThreshold(dict_data_baseline , dict_data_anomaly, df_compare):</span>
-</span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a>    
-</span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a><span class="c1">#     c = 1.00</span>
-</span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a><span class="c1">#     # df_anomaly_test = dict_data_anomaly[&quot;train_set&quot;]</span>
-</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a><span class="c1">#     # df_baseline_fore = arimaUtil.getForecast(dict_data_baseline[&quot;fitted_optimal_model&quot;], len(df_anomaly_test), dict_data_baseline[&quot;test_trans_set&quot;][&quot;opt_lamda&quot;])</span>
+</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a>
+</span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a>
+</span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a>
+</span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a>
+</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a>
 </span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a>
-</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a><span class="c1">#     # df_abs_err = np.abs(df_anomaly_test - np.median(df_baseline_fore))</span>
-</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a><span class="c1">#     # n_mad = mad(df_abs_err, c = c)</span>
-</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a><span class="c1">#     # #score calc</span>
-</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a><span class="c1">#     # n_mad_scores = df_abs_err / n_mad</span>
-</span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a><span class="c1">#     # n_max_score = np.quantile(n_mad_scores , 0.75)</span>
+</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>
+</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a>
+</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a>
+</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a>
+</span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a>
 </span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>
-</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a><span class="c1">#     df_baseline_fore = arimaUtil.getForecast(dict_data_baseline[&quot;fitted_optimal_model&quot;], len(df_compare), dict_data_baseline[&quot;test_trans_set&quot;][&quot;opt_lamda&quot;])</span>
-</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a><span class="c1">#     df_anomaly_fore = arimaUtil.getForecast(dict_data_anomaly[&quot;fitted_optimal_model&quot;], len(df_compare), dict_data_anomaly[&quot;test_trans_set&quot;][&quot;opt_lamda&quot;])</span>
+</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a>
+</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a>
 </span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a>
-</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a><span class="c1">#     df_baseline_err = df_compare - df_baseline_fore</span>
-</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a><span class="c1">#     df_anomaly_err = df_compare - df_anomaly_fore</span>
-</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a>
-</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a><span class="c1">#     is_anomaly = df_anomaly_err &lt; df_baseline_err</span>
-</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a><span class="c1">#     return n_max_score    </span>
+</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a>
+</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a><span class="c1"># def detectOutlier(dict_data_baseline, df_data_compare, n_max_score, n_jarque_bera = None):</span>
+</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a><span class="c1">#     # gets the mad scors of ongoing</span>
+</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a><span class="c1">#     #detects the percentage of anomalies of a given observation set</span>
+</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a><span class="c1">#     df_forecast_comp = arimaUtil.getForecast(dict_data_baseline[&quot;fitted_optimal_model&quot;], len(df_data_compare), dict_data_baseline[&quot;test_trans_set&quot;][&quot;opt_lamda&quot;])</span>
 </span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a>
-</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="c1"># def getMADScores(df_baseline_fore,df_to_compare, n_jarque_bera = None): </span>
-</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="c1">#     c = 1.00</span>
-</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="c1">#     df_abs_err = np.abs(df_to_compare - np.median(df_baseline_fore))</span>
-</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="c1">#     n_mad = mad(df_abs_err, c = 1.00)</span>
+</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="c1">#     df_scores = getMADScores(df_forecast_comp, df_data_compare)</span>
+</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a>
+</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="c1">#     df_filtered = df_scores[(df_scores &gt;= n_max_score).all(axis=1)]</span>
+</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="c1">#     n_percentage_anomalies = len(df_filtered) / len(df_data_compare) *100</span>
 </span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a>
-</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a><span class="c1">#     #score per observation</span>
-</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a><span class="c1">#     df_scores = df_abs_err / n_mad</span>
-</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a>
-</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a><span class="c1">#     return df_scores</span>
+</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a><span class="c1">#     return n_percentage_anomalies </span>
+</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a>
+</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a><span class="c1"># def getAnomalyThreshold(dict_data_baseline , dict_data_anomaly, df_compare):</span>
+</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a>    
+</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a><span class="c1">#     c = 1.00</span>
+</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a><span class="c1">#     # df_anomaly_test = dict_data_anomaly[&quot;train_set&quot;]</span>
+</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a><span class="c1">#     # df_baseline_fore = arimaUtil.getForecast(dict_data_baseline[&quot;fitted_optimal_model&quot;], len(df_anomaly_test), dict_data_baseline[&quot;test_trans_set&quot;][&quot;opt_lamda&quot;])</span>
+</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a>
+</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a><span class="c1">#     # df_abs_err = np.abs(df_anomaly_test - np.median(df_baseline_fore))</span>
+</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a><span class="c1">#     # n_mad = mad(df_abs_err, c = c)</span>
+</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a><span class="c1">#     # #score calc</span>
+</span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a><span class="c1">#     # n_mad_scores = df_abs_err / n_mad</span>
+</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a><span class="c1">#     # n_max_score = np.quantile(n_mad_scores , 0.75)</span>
+</span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a>
+</span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a><span class="c1">#     df_baseline_fore = arimaUtil.getForecast(dict_data_baseline[&quot;fitted_optimal_model&quot;], len(df_compare), dict_data_baseline[&quot;test_trans_set&quot;][&quot;opt_lamda&quot;])</span>
+</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a><span class="c1">#     df_anomaly_fore = arimaUtil.getForecast(dict_data_anomaly[&quot;fitted_optimal_model&quot;], len(df_compare), dict_data_anomaly[&quot;test_trans_set&quot;][&quot;opt_lamda&quot;])</span>
+</span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a>
+</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a><span class="c1">#     df_baseline_err = df_compare - df_baseline_fore</span>
+</span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a><span class="c1">#     df_anomaly_err = df_compare - df_anomaly_fore</span>
+</span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a>
+</span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a><span class="c1">#     is_anomaly = df_anomaly_err &lt; df_baseline_err</span>
+</span><span id="L-150"><a href="#L-150"><span class="linenos">150</span></a><span class="c1">#     return n_max_score    </span>
+</span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a>
+</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a><span class="c1"># def getMADScores(df_baseline_fore,df_to_compare, n_jarque_bera = None): </span>
+</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a><span class="c1">#     c = 1.00</span>
+</span><span id="L-154"><a href="#L-154"><span class="linenos">154</span></a><span class="c1">#     df_abs_err = np.abs(df_to_compare - np.median(df_baseline_fore))</span>
+</span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a><span class="c1">#     n_mad = mad(df_abs_err, c = 1.00)</span>
+</span><span id="L-156"><a href="#L-156"><span class="linenos">156</span></a>
+</span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a><span class="c1">#     #score per observation</span>
+</span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a><span class="c1">#     df_scores = df_abs_err / n_mad</span>
+</span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a>
+</span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a><span class="c1">#     return df_scores</span>
 </span></pre></div>
 
 
@@ -204,41 +232,86 @@ SourceCode<wbr>.<a href="./../source.html">source</a><wbr>.OutlierDetectorUtil  
 
     </div>
     <a class="headerlink" href="#getAnomalies"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="getAnomalies-13"><a href="#getAnomalies-13"><span class="linenos">13</span></a><span class="k">def</span><span class="w"> </span><span class="nf">getAnomalies</span><span class="p">(</span><span class="n">df_baseline_fore</span><span class="p">,</span> <span class="n">df_anomaly_fore</span><span class="p">,</span> <span class="n">df_observ</span><span class="p">,</span> <span class="n">dict_results</span><span class="p">):</span> 
-</span><span id="getAnomalies-14"><a href="#getAnomalies-14"><span class="linenos">14</span></a>    <span class="c1"># Get the errors from the median of the forecast to the given observation </span>
-</span><span id="getAnomalies-15"><a href="#getAnomalies-15"><span class="linenos">15</span></a>    <span class="n">df_base_err</span> <span class="o">=</span> <span class="p">(</span><span class="n">df_observ</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">df_baseline_fore</span><span class="p">))</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
-</span><span id="getAnomalies-16"><a href="#getAnomalies-16"><span class="linenos">16</span></a>
-</span><span id="getAnomalies-17"><a href="#getAnomalies-17"><span class="linenos">17</span></a>    <span class="c1"># Get the errors for the upper and lower bound by subtracting the median of the anomaly forecast from the observations and its inverted form</span>
-</span><span id="getAnomalies-18"><a href="#getAnomalies-18"><span class="linenos">18</span></a>    <span class="n">df_anomaly_err_pos</span> <span class="o">=</span> <span class="p">(</span><span class="n">df_observ</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">df_anomaly_fore</span><span class="p">))</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="c1"># Idea like the band for ACF and PACF</span>
-</span><span id="getAnomalies-19"><a href="#getAnomalies-19"><span class="linenos">19</span></a>    <span class="c1"># df_anomaly_err_neg = np.negative(df_anomaly_err_pos)</span>
-</span><span id="getAnomalies-20"><a href="#getAnomalies-20"><span class="linenos">20</span></a>
-</span><span id="getAnomalies-21"><a href="#getAnomalies-21"><span class="linenos">21</span></a>    <span class="c1"># produces an array containing boolean for anomalies for each index where one happens to be based on being nearer to the error of the forecasted anomalous process</span>
-</span><span id="getAnomalies-22"><a href="#getAnomalies-22"><span class="linenos">22</span></a>    <span class="c1"># is_anomaly = (df_anomaly_err_pos &lt;= df_base_err) | (df_anomaly_err_neg &gt;= df_base_err) </span>
-</span><span id="getAnomalies-23"><a href="#getAnomalies-23"><span class="linenos">23</span></a>    <span class="n">is_anomaly</span> <span class="o">=</span> <span class="n">df_anomaly_err_pos</span> <span class="o">&lt;=</span> <span class="n">df_base_err</span>
-</span><span id="getAnomalies-24"><a href="#getAnomalies-24"><span class="linenos">24</span></a>    <span class="n">n_indices_anomalies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">is_anomaly</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-</span><span id="getAnomalies-25"><a href="#getAnomalies-25"><span class="linenos">25</span></a>
-</span><span id="getAnomalies-26"><a href="#getAnomalies-26"><span class="linenos">26</span></a>    <span class="c1"># create a data collection containing the band value for this observation</span>
-</span><span id="getAnomalies-27"><a href="#getAnomalies-27"><span class="linenos">27</span></a>    <span class="n">df_anomalies</span> <span class="o">=</span> <span class="n">df_observ</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">n_indices_anomalies</span><span class="p">]</span>
-</span><span id="getAnomalies-28"><a href="#getAnomalies-28"><span class="linenos">28</span></a>
-</span><span id="getAnomalies-29"><a href="#getAnomalies-29"><span class="linenos">29</span></a>    <span class="n">n_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">df_anomalies</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
-</span><span id="getAnomalies-30"><a href="#getAnomalies-30"><span class="linenos">30</span></a>    <span class="n">n_band_value_upper</span> <span class="o">=</span>  <span class="n">n_min</span>
-</span><span id="getAnomalies-31"><a href="#getAnomalies-31"><span class="linenos">31</span></a>    
-</span><span id="getAnomalies-32"><a href="#getAnomalies-32"><span class="linenos">32</span></a>    <span class="n">df_band_values_base_fore_upper</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">n_band_value_upper</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_observ</span><span class="p">))</span>
-</span><span id="getAnomalies-33"><a href="#getAnomalies-33"><span class="linenos">33</span></a>    <span class="c1"># === Save Results =========</span>
-</span><span id="getAnomalies-34"><a href="#getAnomalies-34"><span class="linenos">34</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;anomaly_bool&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">is_anomaly</span>
-</span><span id="getAnomalies-35"><a href="#getAnomalies-35"><span class="linenos">35</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;df_anomalies_indices&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_indices_anomalies</span>
-</span><span id="getAnomalies-36"><a href="#getAnomalies-36"><span class="linenos">36</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;df_anomalies&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_anomalies</span>
-</span><span id="getAnomalies-37"><a href="#getAnomalies-37"><span class="linenos">37</span></a>
-</span><span id="getAnomalies-38"><a href="#getAnomalies-38"><span class="linenos">38</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;df_base_err&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_base_err</span>
-</span><span id="getAnomalies-39"><a href="#getAnomalies-39"><span class="linenos">39</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;df_base_fore_band_values_upper&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_band_values_base_fore_upper</span>
-</span><span id="getAnomalies-40"><a href="#getAnomalies-40"><span class="linenos">40</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;lowest_anomaly&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_band_value_upper</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="getAnomalies-9"><a href="#getAnomalies-9"><span class="linenos"> 9</span></a><span class="k">def</span><span class="w"> </span><span class="nf">getAnomalies</span><span class="p">(</span><span class="n">df_baseline_fore</span><span class="p">,</span> <span class="n">df_anomaly_fore</span><span class="p">,</span> <span class="n">df_observ</span><span class="p">,</span> <span class="n">dict_results</span><span class="p">):</span>
+</span><span id="getAnomalies-10"><a href="#getAnomalies-10"><span class="linenos">10</span></a>
+</span><span id="getAnomalies-11"><a href="#getAnomalies-11"><span class="linenos">11</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="getAnomalies-12"><a href="#getAnomalies-12"><span class="linenos">12</span></a><span class="sd">    A function for detecting anomalies based on forecast error to the medians of base and anomalous forecast.</span>
+</span><span id="getAnomalies-13"><a href="#getAnomalies-13"><span class="linenos">13</span></a><span class="sd">    This function performs the following operations:</span>
+</span><span id="getAnomalies-14"><a href="#getAnomalies-14"><span class="linenos">14</span></a><span class="sd">        1. Obtains the absolute errors between an observation set and the medians of a base and anomalous forecast</span>
+</span><span id="getAnomalies-15"><a href="#getAnomalies-15"><span class="linenos">15</span></a><span class="sd">        2. Detects an anomalie if the difference between the anomalous median forecast and the observation set is less than with the base foreacast</span>
+</span><span id="getAnomalies-16"><a href="#getAnomalies-16"><span class="linenos">16</span></a><span class="sd">        3. Locates the indices of the anomalies and constructs a band based on the lowest anomaly found</span>
+</span><span id="getAnomalies-17"><a href="#getAnomalies-17"><span class="linenos">17</span></a><span class="sd">        4. Saves the results and returns them</span>
+</span><span id="getAnomalies-18"><a href="#getAnomalies-18"><span class="linenos">18</span></a><span class="sd">    Args:</span>
+</span><span id="getAnomalies-19"><a href="#getAnomalies-19"><span class="linenos">19</span></a><span class="sd">        df_baseline_fore (df.DataSeries): A forecast based on the modelled base process</span>
+</span><span id="getAnomalies-20"><a href="#getAnomalies-20"><span class="linenos">20</span></a><span class="sd">        df_anomaly_fore (df.DataSeries): A forecast based on the modelled forecast process</span>
+</span><span id="getAnomalies-21"><a href="#getAnomalies-21"><span class="linenos">21</span></a><span class="sd">        df_observ (df.DataSeries): An observation set which needs its anomalies detected</span>
+</span><span id="getAnomalies-22"><a href="#getAnomalies-22"><span class="linenos">22</span></a><span class="sd">        dict_results (dict): A dictionary containing information of previous time series analysis steps</span>
+</span><span id="getAnomalies-23"><a href="#getAnomalies-23"><span class="linenos">23</span></a><span class="sd">    Returns:</span>
+</span><span id="getAnomalies-24"><a href="#getAnomalies-24"><span class="linenos">24</span></a><span class="sd">        df_anomalies (pandas.DataFrame): A dataframe containing the anomaly indices</span>
+</span><span id="getAnomalies-25"><a href="#getAnomalies-25"><span class="linenos">25</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="getAnomalies-26"><a href="#getAnomalies-26"><span class="linenos">26</span></a> 
+</span><span id="getAnomalies-27"><a href="#getAnomalies-27"><span class="linenos">27</span></a>    <span class="c1"># Get the errors from the median of the forecast to the given observation </span>
+</span><span id="getAnomalies-28"><a href="#getAnomalies-28"><span class="linenos">28</span></a>    <span class="n">df_base_err</span> <span class="o">=</span> <span class="p">(</span><span class="n">df_observ</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">df_baseline_fore</span><span class="p">))</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+</span><span id="getAnomalies-29"><a href="#getAnomalies-29"><span class="linenos">29</span></a>
+</span><span id="getAnomalies-30"><a href="#getAnomalies-30"><span class="linenos">30</span></a>    <span class="c1"># Get the errors for the upper and lower bound by subtracting the median of the anomaly forecast from the observations and its inverted form</span>
+</span><span id="getAnomalies-31"><a href="#getAnomalies-31"><span class="linenos">31</span></a>    <span class="n">df_anomaly_err_pos</span> <span class="o">=</span> <span class="p">(</span><span class="n">df_observ</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">df_anomaly_fore</span><span class="p">))</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="c1"># Idea like the band for ACF and PACF</span>
+</span><span id="getAnomalies-32"><a href="#getAnomalies-32"><span class="linenos">32</span></a>    <span class="c1"># df_anomaly_err_neg = np.negative(df_anomaly_err_pos)</span>
+</span><span id="getAnomalies-33"><a href="#getAnomalies-33"><span class="linenos">33</span></a>
+</span><span id="getAnomalies-34"><a href="#getAnomalies-34"><span class="linenos">34</span></a>    <span class="c1"># produces an array containing boolean for anomalies for each index where one happens to be based on being nearer to the error of the forecasted anomalous process</span>
+</span><span id="getAnomalies-35"><a href="#getAnomalies-35"><span class="linenos">35</span></a>    <span class="c1"># is_anomaly = (df_anomaly_err_pos &lt;= df_base_err) | (df_anomaly_err_neg &gt;= df_base_err) </span>
+</span><span id="getAnomalies-36"><a href="#getAnomalies-36"><span class="linenos">36</span></a>    <span class="n">is_anomaly</span> <span class="o">=</span> <span class="n">df_anomaly_err_pos</span> <span class="o">&lt;=</span> <span class="n">df_base_err</span>
+</span><span id="getAnomalies-37"><a href="#getAnomalies-37"><span class="linenos">37</span></a>    <span class="n">n_indices_anomalies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">is_anomaly</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</span><span id="getAnomalies-38"><a href="#getAnomalies-38"><span class="linenos">38</span></a>
+</span><span id="getAnomalies-39"><a href="#getAnomalies-39"><span class="linenos">39</span></a>    <span class="c1"># create a data collection containing the band value for this observation</span>
+</span><span id="getAnomalies-40"><a href="#getAnomalies-40"><span class="linenos">40</span></a>    <span class="n">df_anomalies</span> <span class="o">=</span> <span class="n">df_observ</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">n_indices_anomalies</span><span class="p">]</span>
 </span><span id="getAnomalies-41"><a href="#getAnomalies-41"><span class="linenos">41</span></a>
-</span><span id="getAnomalies-42"><a href="#getAnomalies-42"><span class="linenos">42</span></a>    <span class="c1">#===========================</span>
-</span><span id="getAnomalies-43"><a href="#getAnomalies-43"><span class="linenos">43</span></a>    <span class="k">return</span> <span class="n">df_anomalies</span>
+</span><span id="getAnomalies-42"><a href="#getAnomalies-42"><span class="linenos">42</span></a>    <span class="n">n_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">df_anomalies</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+</span><span id="getAnomalies-43"><a href="#getAnomalies-43"><span class="linenos">43</span></a>    <span class="n">n_band_value_upper</span> <span class="o">=</span>  <span class="n">n_min</span>
+</span><span id="getAnomalies-44"><a href="#getAnomalies-44"><span class="linenos">44</span></a>    
+</span><span id="getAnomalies-45"><a href="#getAnomalies-45"><span class="linenos">45</span></a>    <span class="n">df_band_values_base_fore_upper</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">n_band_value_upper</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_observ</span><span class="p">))</span>
+</span><span id="getAnomalies-46"><a href="#getAnomalies-46"><span class="linenos">46</span></a>    <span class="c1"># === Save Results =========</span>
+</span><span id="getAnomalies-47"><a href="#getAnomalies-47"><span class="linenos">47</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;anomaly_bool&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">is_anomaly</span>
+</span><span id="getAnomalies-48"><a href="#getAnomalies-48"><span class="linenos">48</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;df_anomalies_indices&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_indices_anomalies</span>
+</span><span id="getAnomalies-49"><a href="#getAnomalies-49"><span class="linenos">49</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;df_anomalies&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_anomalies</span>
+</span><span id="getAnomalies-50"><a href="#getAnomalies-50"><span class="linenos">50</span></a>
+</span><span id="getAnomalies-51"><a href="#getAnomalies-51"><span class="linenos">51</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;df_base_err&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_base_err</span>
+</span><span id="getAnomalies-52"><a href="#getAnomalies-52"><span class="linenos">52</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;df_base_fore_band_values_upper&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_band_values_base_fore_upper</span>
+</span><span id="getAnomalies-53"><a href="#getAnomalies-53"><span class="linenos">53</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;lowest_anomaly&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_band_value_upper</span>
+</span><span id="getAnomalies-54"><a href="#getAnomalies-54"><span class="linenos">54</span></a>
+</span><span id="getAnomalies-55"><a href="#getAnomalies-55"><span class="linenos">55</span></a>    <span class="c1">#===========================</span>
+</span><span id="getAnomalies-56"><a href="#getAnomalies-56"><span class="linenos">56</span></a>    <span class="k">return</span> <span class="n">df_anomalies</span>
 </span></pre></div>
 
 
-    
+            <div class="docstring"><p>A function for detecting anomalies based on forecast error to the medians of base and anomalous forecast.</p>
+
+<h6 id="this-function-performs-the-following-operations">This function performs the following operations:</h6>
+
+<blockquote>
+  <ol>
+  <li>Obtains the absolute errors between an observation set and the medians of a base and anomalous forecast</li>
+  <li>Detects an anomalie if the difference between the anomalous median forecast and the observation set is less than with the base foreacast</li>
+  <li>Locates the indices of the anomalies and constructs a band based on the lowest anomaly found</li>
+  <li>Saves the results and returns them</li>
+  </ol>
+</blockquote>
+
+<h6 id="arguments">Arguments:</h6>
+
+<ul>
+<li><strong>df_baseline_fore (df.DataSeries):</strong>  A forecast based on the modelled base process</li>
+<li><strong>df_anomaly_fore (df.DataSeries):</strong>  A forecast based on the modelled forecast process</li>
+<li><strong>df_observ (df.DataSeries):</strong>  An observation set which needs its anomalies detected</li>
+<li><strong>dict_results (dict):</strong>  A dictionary containing information of previous time series analysis steps</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>df_anomalies (pandas.DataFrame): A dataframe containing the anomaly indices</p>
+</blockquote>
+</div>
+
 
                 </section>
                 <section id="getRecommendation">
@@ -252,28 +325,68 @@ SourceCode<wbr>.<a href="./../source.html">source</a><wbr>.OutlierDetectorUtil  
 
     </div>
     <a class="headerlink" href="#getRecommendation"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="getRecommendation-45"><a href="#getRecommendation-45"><span class="linenos">45</span></a><span class="k">def</span><span class="w"> </span><span class="nf">getRecommendation</span><span class="p">(</span><span class="n">df_anomalies</span><span class="p">,</span> <span class="n">df_observ</span><span class="p">,</span> <span class="n">dict_results</span><span class="p">):</span>
-</span><span id="getRecommendation-46"><a href="#getRecommendation-46"><span class="linenos">46</span></a>
-</span><span id="getRecommendation-47"><a href="#getRecommendation-47"><span class="linenos">47</span></a>    <span class="n">failure_percentage</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_anomalies</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_observ</span><span class="p">)</span>
-</span><span id="getRecommendation-48"><a href="#getRecommendation-48"><span class="linenos">48</span></a>    <span class="n">str_recommendation</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-</span><span id="getRecommendation-49"><a href="#getRecommendation-49"><span class="linenos">49</span></a>
-</span><span id="getRecommendation-50"><a href="#getRecommendation-50"><span class="linenos">50</span></a>    <span class="k">if</span> <span class="mf">0.2</span> <span class="o">&gt;</span> <span class="n">failure_percentage</span> <span class="o">&gt;=</span> <span class="mf">0.05</span><span class="p">:</span>
-</span><span id="getRecommendation-51"><a href="#getRecommendation-51"><span class="linenos">51</span></a>        <span class="n">str_recommendation</span> <span class="o">=</span> <span class="s2">&quot;Schedule maintenance as soon as possible&quot;</span>
-</span><span id="getRecommendation-52"><a href="#getRecommendation-52"><span class="linenos">52</span></a>    <span class="k">if</span> <span class="mf">0.3</span> <span class="o">&gt;</span> <span class="n">failure_percentage</span> <span class="o">&gt;=</span> <span class="mf">0.2</span><span class="p">:</span>
-</span><span id="getRecommendation-53"><a href="#getRecommendation-53"><span class="linenos">53</span></a>        <span class="n">str_recommendation</span> <span class="o">=</span> <span class="s2">&quot;Schedule maintenance&quot;</span>
-</span><span id="getRecommendation-54"><a href="#getRecommendation-54"><span class="linenos">54</span></a>    <span class="k">elif</span> <span class="mf">0.4</span> <span class="o">&gt;</span> <span class="n">failure_percentage</span> <span class="o">&gt;=</span> <span class="mf">0.3</span><span class="p">:</span>
-</span><span id="getRecommendation-55"><a href="#getRecommendation-55"><span class="linenos">55</span></a>        <span class="n">str_recommendation</span> <span class="o">=</span> <span class="s2">&quot;Schedule maintenance immediately&quot;</span>
-</span><span id="getRecommendation-56"><a href="#getRecommendation-56"><span class="linenos">56</span></a>    <span class="k">elif</span> <span class="n">failure_percentage</span> <span class="o">&gt;=</span> <span class="mf">0.4</span><span class="p">:</span>
-</span><span id="getRecommendation-57"><a href="#getRecommendation-57"><span class="linenos">57</span></a>        <span class="n">str_recommendation</span> <span class="o">=</span> <span class="s2">&quot;Critical operations failure imminent&quot;</span>
-</span><span id="getRecommendation-58"><a href="#getRecommendation-58"><span class="linenos">58</span></a>    
-</span><span id="getRecommendation-59"><a href="#getRecommendation-59"><span class="linenos">59</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;str_recommendation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">str_recommendation</span>
-</span><span id="getRecommendation-60"><a href="#getRecommendation-60"><span class="linenos">60</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;failure_percentage&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">failure_percentage</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span> 
-</span><span id="getRecommendation-61"><a href="#getRecommendation-61"><span class="linenos">61</span></a>
-</span><span id="getRecommendation-62"><a href="#getRecommendation-62"><span class="linenos">62</span></a>    <span class="k">return</span> <span class="n">str_recommendation</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="getRecommendation-58"><a href="#getRecommendation-58"><span class="linenos">58</span></a><span class="k">def</span><span class="w"> </span><span class="nf">getRecommendation</span><span class="p">(</span><span class="n">df_anomalies</span><span class="p">,</span> <span class="n">df_observ</span><span class="p">,</span> <span class="n">dict_results</span><span class="p">):</span>
+</span><span id="getRecommendation-59"><a href="#getRecommendation-59"><span class="linenos">59</span></a>
+</span><span id="getRecommendation-60"><a href="#getRecommendation-60"><span class="linenos">60</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="getRecommendation-61"><a href="#getRecommendation-61"><span class="linenos">61</span></a><span class="sd">    A function for presenting a recommendation based on the relative amount of anomalies detected.</span>
+</span><span id="getRecommendation-62"><a href="#getRecommendation-62"><span class="linenos">62</span></a><span class="sd">    This function performs the following operations:</span>
+</span><span id="getRecommendation-63"><a href="#getRecommendation-63"><span class="linenos">63</span></a><span class="sd">        1. Computes a percentage value based on anomalies observed in an observation set</span>
+</span><span id="getRecommendation-64"><a href="#getRecommendation-64"><span class="linenos">64</span></a><span class="sd">        2. Recommends a maintenance strategy based on the percentage calculated</span>
+</span><span id="getRecommendation-65"><a href="#getRecommendation-65"><span class="linenos">65</span></a><span class="sd">        3. Returns the recommendation</span>
+</span><span id="getRecommendation-66"><a href="#getRecommendation-66"><span class="linenos">66</span></a><span class="sd">    Args:</span>
+</span><span id="getRecommendation-67"><a href="#getRecommendation-67"><span class="linenos">67</span></a><span class="sd">        df_anomalies (pandas.DataSeries): A series containing the detected anomalies of an observation set</span>
+</span><span id="getRecommendation-68"><a href="#getRecommendation-68"><span class="linenos">68</span></a><span class="sd">        df_observ (pandas.DataSeries): A series containing the observation set on which the detector was used upon</span>
+</span><span id="getRecommendation-69"><a href="#getRecommendation-69"><span class="linenos">69</span></a>
+</span><span id="getRecommendation-70"><a href="#getRecommendation-70"><span class="linenos">70</span></a><span class="sd">    Returns:</span>
+</span><span id="getRecommendation-71"><a href="#getRecommendation-71"><span class="linenos">71</span></a><span class="sd">        dict_results (dict): A dictionary containing information of previous time series analysis steps</span>
+</span><span id="getRecommendation-72"><a href="#getRecommendation-72"><span class="linenos">72</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="getRecommendation-73"><a href="#getRecommendation-73"><span class="linenos">73</span></a>    <span class="n">failure_percentage</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_anomalies</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_observ</span><span class="p">)</span>
+</span><span id="getRecommendation-74"><a href="#getRecommendation-74"><span class="linenos">74</span></a>    <span class="n">str_recommendation</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+</span><span id="getRecommendation-75"><a href="#getRecommendation-75"><span class="linenos">75</span></a>
+</span><span id="getRecommendation-76"><a href="#getRecommendation-76"><span class="linenos">76</span></a>    <span class="k">if</span> <span class="mf">0.2</span> <span class="o">&gt;</span> <span class="n">failure_percentage</span> <span class="o">&gt;=</span> <span class="mf">0.05</span><span class="p">:</span>
+</span><span id="getRecommendation-77"><a href="#getRecommendation-77"><span class="linenos">77</span></a>        <span class="n">str_recommendation</span> <span class="o">=</span> <span class="s2">&quot;Schedule maintenance as soon as possible&quot;</span>
+</span><span id="getRecommendation-78"><a href="#getRecommendation-78"><span class="linenos">78</span></a>    <span class="k">if</span> <span class="mf">0.3</span> <span class="o">&gt;</span> <span class="n">failure_percentage</span> <span class="o">&gt;=</span> <span class="mf">0.2</span><span class="p">:</span>
+</span><span id="getRecommendation-79"><a href="#getRecommendation-79"><span class="linenos">79</span></a>        <span class="n">str_recommendation</span> <span class="o">=</span> <span class="s2">&quot;Schedule maintenance&quot;</span>
+</span><span id="getRecommendation-80"><a href="#getRecommendation-80"><span class="linenos">80</span></a>    <span class="k">elif</span> <span class="mf">0.4</span> <span class="o">&gt;</span> <span class="n">failure_percentage</span> <span class="o">&gt;=</span> <span class="mf">0.3</span><span class="p">:</span>
+</span><span id="getRecommendation-81"><a href="#getRecommendation-81"><span class="linenos">81</span></a>        <span class="n">str_recommendation</span> <span class="o">=</span> <span class="s2">&quot;Schedule maintenance immediately&quot;</span>
+</span><span id="getRecommendation-82"><a href="#getRecommendation-82"><span class="linenos">82</span></a>    <span class="k">elif</span> <span class="n">failure_percentage</span> <span class="o">&gt;=</span> <span class="mf">0.4</span><span class="p">:</span>
+</span><span id="getRecommendation-83"><a href="#getRecommendation-83"><span class="linenos">83</span></a>        <span class="n">str_recommendation</span> <span class="o">=</span> <span class="s2">&quot;Critical operations failure imminent&quot;</span>
+</span><span id="getRecommendation-84"><a href="#getRecommendation-84"><span class="linenos">84</span></a>    
+</span><span id="getRecommendation-85"><a href="#getRecommendation-85"><span class="linenos">85</span></a>    <span class="c1"># === Save Results =========</span>
+</span><span id="getRecommendation-86"><a href="#getRecommendation-86"><span class="linenos">86</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;str_recommendation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">str_recommendation</span>
+</span><span id="getRecommendation-87"><a href="#getRecommendation-87"><span class="linenos">87</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;failure_percentage&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">failure_percentage</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span> 
+</span><span id="getRecommendation-88"><a href="#getRecommendation-88"><span class="linenos">88</span></a>    <span class="c1"># ==========================</span>
+</span><span id="getRecommendation-89"><a href="#getRecommendation-89"><span class="linenos">89</span></a>
+</span><span id="getRecommendation-90"><a href="#getRecommendation-90"><span class="linenos">90</span></a>    <span class="k">return</span> <span class="n">str_recommendation</span>
 </span></pre></div>
 
 
-    
+            <div class="docstring"><p>A function for presenting a recommendation based on the relative amount of anomalies detected.</p>
+
+<h6 id="this-function-performs-the-following-operations">This function performs the following operations:</h6>
+
+<blockquote>
+  <ol>
+  <li>Computes a percentage value based on anomalies observed in an observation set</li>
+  <li>Recommends a maintenance strategy based on the percentage calculated</li>
+  <li>Returns the recommendation</li>
+  </ol>
+</blockquote>
+
+<h6 id="arguments">Arguments:</h6>
+
+<ul>
+<li><strong>df_anomalies (pandas.DataSeries):</strong>  A series containing the detected anomalies of an observation set</li>
+<li><strong>df_observ (pandas.DataSeries):</strong>  A series containing the observation set on which the detector was used upon</li>
+</ul>
+
+<h6 id="returns">Returns:</h6>
+
+<blockquote>
+  <p>dict_results (dict): A dictionary containing information of previous time series analysis steps</p>
+</blockquote>
+</div>
+
 
                 </section>
     </main>

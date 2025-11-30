@@ -14,7 +14,32 @@ from sklearn.metrics import mean_absolute_error
 import numpy as np
 
 def run(str_path_undamaged, str_path_damaged, sDepVar, sRenameVar, n_Seasons, n_alpha, s_test_type, script_dir, nSplit=0.8, bAbs=False, str_FolderName=None):
-    
+
+    """
+    A function for running the time series analysis and outlier detection pipeline.
+    This function performs the following operations:
+        1. Preprocesses the data and provides the results as dataframes
+        2. Turns the values with in the dataframes to their absolute values if needed
+        3. Uses the dataframes for time series analysis
+        4. Evaluates the models and the outlier detector based on it
+        5. Constructs sets for the outlier simulation
+        6. Implements the output function
+
+
+    Args:
+        str_path_undamaged (str): A string containing the file path of the base process
+        str_path_damaged (str): A string containing the file path of the anomalous process
+        sDepVar (str): A string containing the dependent variable
+        sRenameVar (str): A string for renaming the dependent variable
+        n_Seasons (int): An integer indicating the number of seasons/periods
+        n_alpha (float): A floating point value for tests invloving an alpha value
+        s_test_type (str): A string containing the stationary test type
+        script_dir (str): A string pointing to the right project directory
+        nSplit (float): A floating point number indicating the test split 
+        bAbs (bool): A boolean for indicating the need to turn the values to their absolute counterparts
+        str_FolderName (str): A string for naming a folder where the output can be stored
+    """
+
     df_undamaged_train, df_undamaged_test = dfUtils.getTrainAndTestSet(pd.read_csv(str_path_undamaged), n_Seasons, sDepVar, sRenameVar, True, nSplit)
     df_damaged_train, df_damaged_test = dfUtils.getTrainAndTestSet(pd.read_csv(str_path_damaged), n_Seasons, sDepVar, sRenameVar, True, nSplit)
 
@@ -51,6 +76,25 @@ def run(str_path_undamaged, str_path_damaged, sDepVar, sRenameVar, n_Seasons, n_
     # out.output(tsa_undmg_results, tsa_dmg_results,t_model_detector_eval, [outDetect_result_sched_main, outDetect_result_sched_maint_asap, outDetect_result_sched_maint_imme, outDetect_result_sched_crit],script_dir, str_FolderName)
 
 def doTimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
+
+    """
+    A function for the implementation of the time series pipeline.
+    This function performs the following operations:
+        1. Transforms the given training set via a Box-Cox transformation with the optimal lambda estimated via the method by Guerrero
+        2. Performs a STL decomposition
+        3. Checks the stationary type of the series
+        4. Gathers an estimation of ARIMA parameters based on the determined stationary type following the method by Tran and Reed
+        5. Selects the optimal ARIMA model
+        6. Checks variance and normality of residuals for possible further improvements
+        7. Forecasts one season and returns the information gathered during this process
+    Args:
+        df_train (pandas.DataFrame): A dataframe containing the training set
+        df_test (pandas.DataFrame): A dataframe containing the test set
+        n_alpha (float): A floating point value for tests invloving an alpha value
+        s_test_type (str): A string containing the stationary test type
+    Returns:
+        dict_results (dict): A dictionary object containing information gathered during the time series analysis
+    """
 
     dict_results = {
     "train_set": df_train,
@@ -111,6 +155,21 @@ def doTimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
     return dict_results
 
 def simulateOutlierDetection(m_TimeSeries_Baseline, m_TimeSeries_Anomalous, df_observ):
+
+    """
+    A function for simulating the outlier detector.
+    This function performs the following operations:
+        1. Gets the base and anomalous forecast
+        2. Detects anomalies
+        3. Saves the median forecasts for plotting and returns the results of the simulations
+
+    Args:
+        m_TimeSeries_Baseline (dict):  A dictionary containing information from the time series analysis of the base process
+        m_TimeSeries_Anomalous (dict): A dictionary containing information from the time series analysis of the anomalous process
+        df_observ (pandas.DataSeries): A series containing observation for the simulation
+    Returns:
+        dict_results (dict): A dictionary containing thre results of the simulation
+    """
 
     dict_results = {}
     df_baseline_fore = arimaUtil.getForecast(m_TimeSeries_Baseline["fitted_optimal_model"], len(df_observ), m_TimeSeries_Baseline["train_trans_set"]["opt_lambda"])
