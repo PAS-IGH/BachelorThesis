@@ -52,64 +52,70 @@
                     <h1 class="modulename">
 SourceCode<wbr>.<a href="./../source.html">source</a><wbr>.STLUtils    </h1>
 
-                
+                        <div class="docstring"><p>Provides functions around STL decomposition and trend strength in particular.</p>
+</div>
+
                         <input id="mod-STLUtils-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 
                         <label class="view-source-button" for="mod-STLUtils-view-source"><span>View Source</span></label>
 
-                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">statsmodels.tsa.seasonal</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">STL</span>
-</span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-</span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a><span class="sd">Provides functions around STL decomposition and trend strength in particular.</span>
+</span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a>
-</span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a><span class="k">def</span><span class="w"> </span><span class="nf">getTrendStrength</span><span class="p">(</span><span class="n">df_stl_trend</span><span class="p">,</span> <span class="n">df_stl_residual</span><span class="p">):</span>
-</span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="w">    </span>
-</span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a><span class="sd">    Calculates the trend strength based on the residual and trend component as shown by Hyndman and Athanasopoulos</span>
-</span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a><span class="sd">    This function performs the following operations:</span>
-</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a><span class="sd">        1. Computes the components and inserts them into the formula</span>
-</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a><span class="sd">        2. Returns the trend strength </span>
-</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a><span class="sd">    Args:</span>
-</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a><span class="sd">        df_stl_trend (pd.DataSeries): Trend component</span>
-</span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a><span class="sd">        df_stl_residual (pd.DataSeries): Residual component</span>
-</span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a>
-</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a><span class="sd">    Returns:</span>
-</span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a><span class="sd">        (float): A floating point number indicating trend strength</span>
-</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a>    <span class="n">n_sum_res_trend</span> <span class="o">=</span> <span class="n">df_stl_residual</span> <span class="o">+</span> <span class="n">df_stl_trend</span> 
-</span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a>
-</span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a>    <span class="n">var_res</span> <span class="o">=</span> <span class="n">df_stl_residual</span><span class="o">.</span><span class="n">var</span><span class="p">()</span>
-</span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a>    <span class="n">var_res_trend</span> <span class="o">=</span> <span class="n">n_sum_res_trend</span><span class="o">.</span><span class="n">var</span><span class="p">()</span>
-</span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a>    <span class="n">n_trend_strength</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">var_res</span> <span class="o">/</span> <span class="n">var_res_trend</span><span class="p">)</span>
+</span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">statsmodels.tsa.seasonal</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">STL</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a>
+</span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a><span class="k">def</span><span class="w"> </span><span class="nf">getTrendStrength</span><span class="p">(</span><span class="n">df_stl_trend</span><span class="p">,</span> <span class="n">df_stl_residual</span><span class="p">):</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a><span class="w">    </span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a><span class="sd">    Calculates the trend strength based on the residual and trend component as shown by Hyndman and Athanasopoulos.</span>
+</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a><span class="sd">    This function performs the following operations:</span>
+</span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a><span class="sd">        1. Computes the components and inserts them into the formula</span>
+</span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a><span class="sd">        2. Returns the trend strength </span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a><span class="sd">    Args:</span>
+</span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a><span class="sd">        df_stl_trend (pd.DataSeries): Trend component</span>
+</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a><span class="sd">        df_stl_residual (pd.DataSeries): Residual component</span>
+</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a>
+</span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a><span class="sd">    Returns:</span>
+</span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a><span class="sd">        (float): A floating point number indicating trend strength</span>
+</span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a>    <span class="n">n_sum_res_trend</span> <span class="o">=</span> <span class="n">df_stl_residual</span> <span class="o">+</span> <span class="n">df_stl_trend</span> 
 </span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a>
-</span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a>    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span> <span class="p">,</span> <span class="n">n_trend_strength</span><span class="p">)</span>
-</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a>
-</span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a><span class="k">def</span><span class="w"> </span><span class="nf">getTrending</span> <span class="p">(</span><span class="n">df_stl_trend</span><span class="p">,</span> <span class="n">df_stl_residual</span><span class="p">,</span> <span class="n">dict_results</span><span class="p">):</span> 
+</span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a>    <span class="n">var_res</span> <span class="o">=</span> <span class="n">df_stl_residual</span><span class="o">.</span><span class="n">var</span><span class="p">()</span>
+</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a>    <span class="n">var_res_trend</span> <span class="o">=</span> <span class="n">n_sum_res_trend</span><span class="o">.</span><span class="n">var</span><span class="p">()</span>
+</span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a>    <span class="n">n_trend_strength</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">var_res</span> <span class="o">/</span> <span class="n">var_res_trend</span><span class="p">)</span>
 </span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a>
-</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a><span class="sd">    Decides if the given trend strength warrants a trending series</span>
-</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a><span class="sd">    This function performs the following operations:</span>
-</span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a><span class="sd">        1. Obtains the trend strength</span>
-</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a><span class="sd">        2. Returns the result</span>
-</span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a><span class="sd">    Args:</span>
-</span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a><span class="sd">        df_stl_trend (pd.DataSeries): Trend component</span>
-</span><span id="L-36"><a href="#L-36"><span class="linenos">36</span></a><span class="sd">        df_stl_residual (pd.DataSeries): Residual component</span>
-</span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a><span class="sd">        dict_results (dict): A dictionary containing information of previous time series analysis steps</span>
-</span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a><span class="sd">    Returns:</span>
-</span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a><span class="sd">        (bool): A boolean indicating a trending series </span>
-</span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a>
-</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a>    <span class="n">n_trend_strength</span> <span class="o">=</span> <span class="n">getTrendStrength</span><span class="p">(</span><span class="n">df_stl_trend</span><span class="p">,</span> <span class="n">df_stl_residual</span><span class="p">)</span>
-</span><span id="L-43"><a href="#L-43"><span class="linenos">43</span></a>
-</span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a>    <span class="c1"># === Save the trend result ============================================</span>
-</span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;trend_info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a>        <span class="s2">&quot;trend_strength&quot;</span><span class="p">:</span> <span class="n">n_trend_strength</span>
-</span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a>    <span class="p">}</span>
-</span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a>    <span class="c1">#========================================================================</span>
-</span><span id="L-49"><a href="#L-49"><span class="linenos">49</span></a>    
-</span><span id="L-50"><a href="#L-50"><span class="linenos">50</span></a>    <span class="k">if</span> <span class="n">n_trend_strength</span> <span class="o">&gt;=</span> <span class="mf">0.4</span><span class="p">:</span>
-</span><span id="L-51"><a href="#L-51"><span class="linenos">51</span></a>        <span class="k">return</span> <span class="kc">True</span>
-</span><span id="L-52"><a href="#L-52"><span class="linenos">52</span></a>    <span class="k">else</span><span class="p">:</span>
-</span><span id="L-53"><a href="#L-53"><span class="linenos">53</span></a>        <span class="k">return</span> <span class="kc">False</span>
+</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a>    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span> <span class="p">,</span> <span class="n">n_trend_strength</span><span class="p">)</span>
+</span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a>
+</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a><span class="k">def</span><span class="w"> </span><span class="nf">getTrending</span> <span class="p">(</span><span class="n">df_stl_trend</span><span class="p">,</span> <span class="n">df_stl_residual</span><span class="p">,</span> <span class="n">dict_results</span><span class="p">):</span> 
+</span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a>
+</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a><span class="sd">    Decides if the given trend strength warrants a trending series.</span>
+</span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a><span class="sd">    This function performs the following operations:</span>
+</span><span id="L-36"><a href="#L-36"><span class="linenos">36</span></a><span class="sd">        1. Obtains the trend strength</span>
+</span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a><span class="sd">        2. Returns the result</span>
+</span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a><span class="sd">    Args:</span>
+</span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a><span class="sd">        df_stl_trend (pd.DataSeries): Trend component</span>
+</span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a><span class="sd">        df_stl_residual (pd.DataSeries): Residual component</span>
+</span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a><span class="sd">        dict_results (dict): A dictionary containing information of previous time series analysis steps</span>
+</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a><span class="sd">    Returns:</span>
+</span><span id="L-43"><a href="#L-43"><span class="linenos">43</span></a><span class="sd">        (bool): A boolean indicating a trending series </span>
+</span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a>
+</span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a>    <span class="n">n_trend_strength</span> <span class="o">=</span> <span class="n">getTrendStrength</span><span class="p">(</span><span class="n">df_stl_trend</span><span class="p">,</span> <span class="n">df_stl_residual</span><span class="p">)</span>
+</span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a>
+</span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a>    <span class="c1"># === Save the trend result ============================================</span>
+</span><span id="L-49"><a href="#L-49"><span class="linenos">49</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;trend_info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="L-50"><a href="#L-50"><span class="linenos">50</span></a>        <span class="s2">&quot;trend_strength&quot;</span><span class="p">:</span> <span class="n">n_trend_strength</span>
+</span><span id="L-51"><a href="#L-51"><span class="linenos">51</span></a>    <span class="p">}</span>
+</span><span id="L-52"><a href="#L-52"><span class="linenos">52</span></a>    <span class="c1">#========================================================================</span>
+</span><span id="L-53"><a href="#L-53"><span class="linenos">53</span></a>    
+</span><span id="L-54"><a href="#L-54"><span class="linenos">54</span></a>    <span class="k">if</span> <span class="n">n_trend_strength</span> <span class="o">&gt;=</span> <span class="mf">0.4</span><span class="p">:</span>
+</span><span id="L-55"><a href="#L-55"><span class="linenos">55</span></a>        <span class="k">return</span> <span class="kc">True</span>
+</span><span id="L-56"><a href="#L-56"><span class="linenos">56</span></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="L-57"><a href="#L-57"><span class="linenos">57</span></a>        <span class="k">return</span> <span class="kc">False</span>
 </span></pre></div>
 
 
@@ -125,31 +131,31 @@ SourceCode<wbr>.<a href="./../source.html">source</a><wbr>.STLUtils    </h1>
 
     </div>
     <a class="headerlink" href="#getTrendStrength"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="getTrendStrength-6"><a href="#getTrendStrength-6"><span class="linenos"> 6</span></a><span class="k">def</span><span class="w"> </span><span class="nf">getTrendStrength</span><span class="p">(</span><span class="n">df_stl_trend</span><span class="p">,</span> <span class="n">df_stl_residual</span><span class="p">):</span>
-</span><span id="getTrendStrength-7"><a href="#getTrendStrength-7"><span class="linenos"> 7</span></a><span class="w">    </span>
-</span><span id="getTrendStrength-8"><a href="#getTrendStrength-8"><span class="linenos"> 8</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="getTrendStrength-9"><a href="#getTrendStrength-9"><span class="linenos"> 9</span></a><span class="sd">    Calculates the trend strength based on the residual and trend component as shown by Hyndman and Athanasopoulos</span>
-</span><span id="getTrendStrength-10"><a href="#getTrendStrength-10"><span class="linenos">10</span></a><span class="sd">    This function performs the following operations:</span>
-</span><span id="getTrendStrength-11"><a href="#getTrendStrength-11"><span class="linenos">11</span></a><span class="sd">        1. Computes the components and inserts them into the formula</span>
-</span><span id="getTrendStrength-12"><a href="#getTrendStrength-12"><span class="linenos">12</span></a><span class="sd">        2. Returns the trend strength </span>
-</span><span id="getTrendStrength-13"><a href="#getTrendStrength-13"><span class="linenos">13</span></a><span class="sd">    Args:</span>
-</span><span id="getTrendStrength-14"><a href="#getTrendStrength-14"><span class="linenos">14</span></a><span class="sd">        df_stl_trend (pd.DataSeries): Trend component</span>
-</span><span id="getTrendStrength-15"><a href="#getTrendStrength-15"><span class="linenos">15</span></a><span class="sd">        df_stl_residual (pd.DataSeries): Residual component</span>
-</span><span id="getTrendStrength-16"><a href="#getTrendStrength-16"><span class="linenos">16</span></a>
-</span><span id="getTrendStrength-17"><a href="#getTrendStrength-17"><span class="linenos">17</span></a><span class="sd">    Returns:</span>
-</span><span id="getTrendStrength-18"><a href="#getTrendStrength-18"><span class="linenos">18</span></a><span class="sd">        (float): A floating point number indicating trend strength</span>
-</span><span id="getTrendStrength-19"><a href="#getTrendStrength-19"><span class="linenos">19</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="getTrendStrength-20"><a href="#getTrendStrength-20"><span class="linenos">20</span></a>    <span class="n">n_sum_res_trend</span> <span class="o">=</span> <span class="n">df_stl_residual</span> <span class="o">+</span> <span class="n">df_stl_trend</span> 
-</span><span id="getTrendStrength-21"><a href="#getTrendStrength-21"><span class="linenos">21</span></a>
-</span><span id="getTrendStrength-22"><a href="#getTrendStrength-22"><span class="linenos">22</span></a>    <span class="n">var_res</span> <span class="o">=</span> <span class="n">df_stl_residual</span><span class="o">.</span><span class="n">var</span><span class="p">()</span>
-</span><span id="getTrendStrength-23"><a href="#getTrendStrength-23"><span class="linenos">23</span></a>    <span class="n">var_res_trend</span> <span class="o">=</span> <span class="n">n_sum_res_trend</span><span class="o">.</span><span class="n">var</span><span class="p">()</span>
-</span><span id="getTrendStrength-24"><a href="#getTrendStrength-24"><span class="linenos">24</span></a>    <span class="n">n_trend_strength</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">var_res</span> <span class="o">/</span> <span class="n">var_res_trend</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="getTrendStrength-10"><a href="#getTrendStrength-10"><span class="linenos">10</span></a><span class="k">def</span><span class="w"> </span><span class="nf">getTrendStrength</span><span class="p">(</span><span class="n">df_stl_trend</span><span class="p">,</span> <span class="n">df_stl_residual</span><span class="p">):</span>
+</span><span id="getTrendStrength-11"><a href="#getTrendStrength-11"><span class="linenos">11</span></a><span class="w">    </span>
+</span><span id="getTrendStrength-12"><a href="#getTrendStrength-12"><span class="linenos">12</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="getTrendStrength-13"><a href="#getTrendStrength-13"><span class="linenos">13</span></a><span class="sd">    Calculates the trend strength based on the residual and trend component as shown by Hyndman and Athanasopoulos.</span>
+</span><span id="getTrendStrength-14"><a href="#getTrendStrength-14"><span class="linenos">14</span></a><span class="sd">    This function performs the following operations:</span>
+</span><span id="getTrendStrength-15"><a href="#getTrendStrength-15"><span class="linenos">15</span></a><span class="sd">        1. Computes the components and inserts them into the formula</span>
+</span><span id="getTrendStrength-16"><a href="#getTrendStrength-16"><span class="linenos">16</span></a><span class="sd">        2. Returns the trend strength </span>
+</span><span id="getTrendStrength-17"><a href="#getTrendStrength-17"><span class="linenos">17</span></a><span class="sd">    Args:</span>
+</span><span id="getTrendStrength-18"><a href="#getTrendStrength-18"><span class="linenos">18</span></a><span class="sd">        df_stl_trend (pd.DataSeries): Trend component</span>
+</span><span id="getTrendStrength-19"><a href="#getTrendStrength-19"><span class="linenos">19</span></a><span class="sd">        df_stl_residual (pd.DataSeries): Residual component</span>
+</span><span id="getTrendStrength-20"><a href="#getTrendStrength-20"><span class="linenos">20</span></a>
+</span><span id="getTrendStrength-21"><a href="#getTrendStrength-21"><span class="linenos">21</span></a><span class="sd">    Returns:</span>
+</span><span id="getTrendStrength-22"><a href="#getTrendStrength-22"><span class="linenos">22</span></a><span class="sd">        (float): A floating point number indicating trend strength</span>
+</span><span id="getTrendStrength-23"><a href="#getTrendStrength-23"><span class="linenos">23</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="getTrendStrength-24"><a href="#getTrendStrength-24"><span class="linenos">24</span></a>    <span class="n">n_sum_res_trend</span> <span class="o">=</span> <span class="n">df_stl_residual</span> <span class="o">+</span> <span class="n">df_stl_trend</span> 
 </span><span id="getTrendStrength-25"><a href="#getTrendStrength-25"><span class="linenos">25</span></a>
-</span><span id="getTrendStrength-26"><a href="#getTrendStrength-26"><span class="linenos">26</span></a>    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span> <span class="p">,</span> <span class="n">n_trend_strength</span><span class="p">)</span>
+</span><span id="getTrendStrength-26"><a href="#getTrendStrength-26"><span class="linenos">26</span></a>    <span class="n">var_res</span> <span class="o">=</span> <span class="n">df_stl_residual</span><span class="o">.</span><span class="n">var</span><span class="p">()</span>
+</span><span id="getTrendStrength-27"><a href="#getTrendStrength-27"><span class="linenos">27</span></a>    <span class="n">var_res_trend</span> <span class="o">=</span> <span class="n">n_sum_res_trend</span><span class="o">.</span><span class="n">var</span><span class="p">()</span>
+</span><span id="getTrendStrength-28"><a href="#getTrendStrength-28"><span class="linenos">28</span></a>    <span class="n">n_trend_strength</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">var_res</span> <span class="o">/</span> <span class="n">var_res_trend</span><span class="p">)</span>
+</span><span id="getTrendStrength-29"><a href="#getTrendStrength-29"><span class="linenos">29</span></a>
+</span><span id="getTrendStrength-30"><a href="#getTrendStrength-30"><span class="linenos">30</span></a>    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span> <span class="p">,</span> <span class="n">n_trend_strength</span><span class="p">)</span>
 </span></pre></div>
 
 
-            <div class="docstring"><p>Calculates the trend strength based on the residual and trend component as shown by Hyndman and Athanasopoulos</p>
+            <div class="docstring"><p>Calculates the trend strength based on the residual and trend component as shown by Hyndman and Athanasopoulos.</p>
 
 <h6 id="this-function-performs-the-following-operations">This function performs the following operations:</h6>
 
@@ -187,37 +193,37 @@ SourceCode<wbr>.<a href="./../source.html">source</a><wbr>.STLUtils    </h1>
 
     </div>
     <a class="headerlink" href="#getTrending"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="getTrending-28"><a href="#getTrending-28"><span class="linenos">28</span></a><span class="k">def</span><span class="w"> </span><span class="nf">getTrending</span> <span class="p">(</span><span class="n">df_stl_trend</span><span class="p">,</span> <span class="n">df_stl_residual</span><span class="p">,</span> <span class="n">dict_results</span><span class="p">):</span> 
-</span><span id="getTrending-29"><a href="#getTrending-29"><span class="linenos">29</span></a>
-</span><span id="getTrending-30"><a href="#getTrending-30"><span class="linenos">30</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="getTrending-31"><a href="#getTrending-31"><span class="linenos">31</span></a><span class="sd">    Decides if the given trend strength warrants a trending series</span>
-</span><span id="getTrending-32"><a href="#getTrending-32"><span class="linenos">32</span></a><span class="sd">    This function performs the following operations:</span>
-</span><span id="getTrending-33"><a href="#getTrending-33"><span class="linenos">33</span></a><span class="sd">        1. Obtains the trend strength</span>
-</span><span id="getTrending-34"><a href="#getTrending-34"><span class="linenos">34</span></a><span class="sd">        2. Returns the result</span>
-</span><span id="getTrending-35"><a href="#getTrending-35"><span class="linenos">35</span></a><span class="sd">    Args:</span>
-</span><span id="getTrending-36"><a href="#getTrending-36"><span class="linenos">36</span></a><span class="sd">        df_stl_trend (pd.DataSeries): Trend component</span>
-</span><span id="getTrending-37"><a href="#getTrending-37"><span class="linenos">37</span></a><span class="sd">        df_stl_residual (pd.DataSeries): Residual component</span>
-</span><span id="getTrending-38"><a href="#getTrending-38"><span class="linenos">38</span></a><span class="sd">        dict_results (dict): A dictionary containing information of previous time series analysis steps</span>
-</span><span id="getTrending-39"><a href="#getTrending-39"><span class="linenos">39</span></a><span class="sd">    Returns:</span>
-</span><span id="getTrending-40"><a href="#getTrending-40"><span class="linenos">40</span></a><span class="sd">        (bool): A boolean indicating a trending series </span>
-</span><span id="getTrending-41"><a href="#getTrending-41"><span class="linenos">41</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="getTrending-42"><a href="#getTrending-42"><span class="linenos">42</span></a>
-</span><span id="getTrending-43"><a href="#getTrending-43"><span class="linenos">43</span></a>    <span class="n">n_trend_strength</span> <span class="o">=</span> <span class="n">getTrendStrength</span><span class="p">(</span><span class="n">df_stl_trend</span><span class="p">,</span> <span class="n">df_stl_residual</span><span class="p">)</span>
-</span><span id="getTrending-44"><a href="#getTrending-44"><span class="linenos">44</span></a>
-</span><span id="getTrending-45"><a href="#getTrending-45"><span class="linenos">45</span></a>    <span class="c1"># === Save the trend result ============================================</span>
-</span><span id="getTrending-46"><a href="#getTrending-46"><span class="linenos">46</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;trend_info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="getTrending-47"><a href="#getTrending-47"><span class="linenos">47</span></a>        <span class="s2">&quot;trend_strength&quot;</span><span class="p">:</span> <span class="n">n_trend_strength</span>
-</span><span id="getTrending-48"><a href="#getTrending-48"><span class="linenos">48</span></a>    <span class="p">}</span>
-</span><span id="getTrending-49"><a href="#getTrending-49"><span class="linenos">49</span></a>    <span class="c1">#========================================================================</span>
-</span><span id="getTrending-50"><a href="#getTrending-50"><span class="linenos">50</span></a>    
-</span><span id="getTrending-51"><a href="#getTrending-51"><span class="linenos">51</span></a>    <span class="k">if</span> <span class="n">n_trend_strength</span> <span class="o">&gt;=</span> <span class="mf">0.4</span><span class="p">:</span>
-</span><span id="getTrending-52"><a href="#getTrending-52"><span class="linenos">52</span></a>        <span class="k">return</span> <span class="kc">True</span>
-</span><span id="getTrending-53"><a href="#getTrending-53"><span class="linenos">53</span></a>    <span class="k">else</span><span class="p">:</span>
-</span><span id="getTrending-54"><a href="#getTrending-54"><span class="linenos">54</span></a>        <span class="k">return</span> <span class="kc">False</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="getTrending-32"><a href="#getTrending-32"><span class="linenos">32</span></a><span class="k">def</span><span class="w"> </span><span class="nf">getTrending</span> <span class="p">(</span><span class="n">df_stl_trend</span><span class="p">,</span> <span class="n">df_stl_residual</span><span class="p">,</span> <span class="n">dict_results</span><span class="p">):</span> 
+</span><span id="getTrending-33"><a href="#getTrending-33"><span class="linenos">33</span></a>
+</span><span id="getTrending-34"><a href="#getTrending-34"><span class="linenos">34</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="getTrending-35"><a href="#getTrending-35"><span class="linenos">35</span></a><span class="sd">    Decides if the given trend strength warrants a trending series.</span>
+</span><span id="getTrending-36"><a href="#getTrending-36"><span class="linenos">36</span></a><span class="sd">    This function performs the following operations:</span>
+</span><span id="getTrending-37"><a href="#getTrending-37"><span class="linenos">37</span></a><span class="sd">        1. Obtains the trend strength</span>
+</span><span id="getTrending-38"><a href="#getTrending-38"><span class="linenos">38</span></a><span class="sd">        2. Returns the result</span>
+</span><span id="getTrending-39"><a href="#getTrending-39"><span class="linenos">39</span></a><span class="sd">    Args:</span>
+</span><span id="getTrending-40"><a href="#getTrending-40"><span class="linenos">40</span></a><span class="sd">        df_stl_trend (pd.DataSeries): Trend component</span>
+</span><span id="getTrending-41"><a href="#getTrending-41"><span class="linenos">41</span></a><span class="sd">        df_stl_residual (pd.DataSeries): Residual component</span>
+</span><span id="getTrending-42"><a href="#getTrending-42"><span class="linenos">42</span></a><span class="sd">        dict_results (dict): A dictionary containing information of previous time series analysis steps</span>
+</span><span id="getTrending-43"><a href="#getTrending-43"><span class="linenos">43</span></a><span class="sd">    Returns:</span>
+</span><span id="getTrending-44"><a href="#getTrending-44"><span class="linenos">44</span></a><span class="sd">        (bool): A boolean indicating a trending series </span>
+</span><span id="getTrending-45"><a href="#getTrending-45"><span class="linenos">45</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="getTrending-46"><a href="#getTrending-46"><span class="linenos">46</span></a>
+</span><span id="getTrending-47"><a href="#getTrending-47"><span class="linenos">47</span></a>    <span class="n">n_trend_strength</span> <span class="o">=</span> <span class="n">getTrendStrength</span><span class="p">(</span><span class="n">df_stl_trend</span><span class="p">,</span> <span class="n">df_stl_residual</span><span class="p">)</span>
+</span><span id="getTrending-48"><a href="#getTrending-48"><span class="linenos">48</span></a>
+</span><span id="getTrending-49"><a href="#getTrending-49"><span class="linenos">49</span></a>    <span class="c1"># === Save the trend result ============================================</span>
+</span><span id="getTrending-50"><a href="#getTrending-50"><span class="linenos">50</span></a>    <span class="n">dict_results</span><span class="p">[</span><span class="s2">&quot;trend_info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="getTrending-51"><a href="#getTrending-51"><span class="linenos">51</span></a>        <span class="s2">&quot;trend_strength&quot;</span><span class="p">:</span> <span class="n">n_trend_strength</span>
+</span><span id="getTrending-52"><a href="#getTrending-52"><span class="linenos">52</span></a>    <span class="p">}</span>
+</span><span id="getTrending-53"><a href="#getTrending-53"><span class="linenos">53</span></a>    <span class="c1">#========================================================================</span>
+</span><span id="getTrending-54"><a href="#getTrending-54"><span class="linenos">54</span></a>    
+</span><span id="getTrending-55"><a href="#getTrending-55"><span class="linenos">55</span></a>    <span class="k">if</span> <span class="n">n_trend_strength</span> <span class="o">&gt;=</span> <span class="mf">0.4</span><span class="p">:</span>
+</span><span id="getTrending-56"><a href="#getTrending-56"><span class="linenos">56</span></a>        <span class="k">return</span> <span class="kc">True</span>
+</span><span id="getTrending-57"><a href="#getTrending-57"><span class="linenos">57</span></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="getTrending-58"><a href="#getTrending-58"><span class="linenos">58</span></a>        <span class="k">return</span> <span class="kc">False</span>
 </span></pre></div>
 
 
-            <div class="docstring"><p>Decides if the given trend strength warrants a trending series</p>
+            <div class="docstring"><p>Decides if the given trend strength warrants a trending series.</p>
 
 <h6 id="this-function-performs-the-following-operations">This function performs the following operations:</h6>
 

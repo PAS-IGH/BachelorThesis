@@ -1,3 +1,7 @@
+"""
+Provides functions for generating the outputs for time series analysis and outlier detection simulation.
+"""
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd

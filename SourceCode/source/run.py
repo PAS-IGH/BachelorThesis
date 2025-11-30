@@ -1,3 +1,6 @@
+"""
+Runs the time series and outlier detection pipelines.
+"""
 from . import UtilsDataFrame as dfUtils
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -19,7 +22,7 @@ def run(str_path_undamaged, str_path_damaged, sDepVar, sRenameVar, n_Seasons, n_
     A function for running the time series analysis and outlier detection pipeline.
     This function performs the following operations:
         1. Preprocesses the data and provides the results as dataframes
-        2. Turns the values with in the dataframes to their absolute values if needed
+        2. Turns the values within the dataframes to their absolute values if needed
         3. Uses the dataframes for time series analysis
         4. Evaluates the models and the outlier detector based on it
         5. Constructs sets for the outlier simulation
@@ -72,15 +75,15 @@ def run(str_path_undamaged, str_path_damaged, sDepVar, sRenameVar, n_Seasons, n_
     outDetect_result_sched_maint_imme  = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, concat_series_sched_maint_imme)
     outDetect_result_sched_crit  = simulateOutlierDetection(tsa_undmg_results, tsa_dmg_results, concat_series_sched_crit)
 
-    # reinstate later
-    # out.output(tsa_undmg_results, tsa_dmg_results,t_model_detector_eval, [outDetect_result_sched_main, outDetect_result_sched_maint_asap, outDetect_result_sched_maint_imme, outDetect_result_sched_crit],script_dir, str_FolderName)
+    
+    out.output(tsa_undmg_results, tsa_dmg_results,t_model_detector_eval, [outDetect_result_sched_main, outDetect_result_sched_maint_asap, outDetect_result_sched_maint_imme, outDetect_result_sched_crit],script_dir, str_FolderName)
 
 def doTimeSeriesAnalysis(df_train, df_test, n_Seasons, n_alpha, s_test_type):
 
     """
     A function for the implementation of the time series pipeline.
     This function performs the following operations:
-        1. Transforms the given training set via a Box-Cox transformation with the optimal lambda estimated via the method by Guerrero
+        1. Transforms the given training set via a Box-Cox transformation with the optimal lambda estimated based upon Guerreros approach
         2. Performs a STL decomposition
         3. Checks the stationary type of the series
         4. Gathers an estimation of ARIMA parameters based on the determined stationary type following the method by Tran and Reed
@@ -166,9 +169,9 @@ def simulateOutlierDetection(m_TimeSeries_Baseline, m_TimeSeries_Anomalous, df_o
     Args:
         m_TimeSeries_Baseline (dict):  A dictionary containing information from the time series analysis of the base process
         m_TimeSeries_Anomalous (dict): A dictionary containing information from the time series analysis of the anomalous process
-        df_observ (pandas.DataSeries): A series containing observation for the simulation
+        df_observ (pandas.DataSeries): A series containing observations for the simulation
     Returns:
-        dict_results (dict): A dictionary containing thre results of the simulation
+        dict_results (dict): A dictionary containing the results of the simulation
     """
 
     dict_results = {}

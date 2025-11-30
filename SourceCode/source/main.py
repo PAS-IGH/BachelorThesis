@@ -1,5 +1,5 @@
 """
-A wrapper for run functions 
+A wrapper for the run functions. 
 This module performs the following operations:
     1. Extracts the sets
     2. Hands them over to run functions

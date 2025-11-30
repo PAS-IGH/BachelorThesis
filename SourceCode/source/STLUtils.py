@@ -1,3 +1,7 @@
+"""
+Provides functions around STL decomposition and trend strength in particular.
+"""
+
 import statsmodels.tsa.seasonal as STL
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -5,7 +9,7 @@ import matplotlib.pyplot as plt
 def getTrendStrength(df_stl_trend, df_stl_residual):
     
     """
-    Calculates the trend strength based on the residual and trend component as shown by Hyndman and Athanasopoulos
+    Calculates the trend strength based on the residual and trend component as shown by Hyndman and Athanasopoulos.
     This function performs the following operations:
         1. Computes the components and inserts them into the formula
         2. Returns the trend strength 
@@ -27,7 +31,7 @@ def getTrendStrength(df_stl_trend, df_stl_residual):
 def getTrending (df_stl_trend, df_stl_residual, dict_results): 
 
     """
-    Decides if the given trend strength warrants a trending series
+    Decides if the given trend strength warrants a trending series.
     This function performs the following operations:
         1. Obtains the trend strength
         2. Returns the result

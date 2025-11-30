@@ -1,3 +1,7 @@
+"""
+Provides functions around detecting anomalies based on forecasting error to the median of a base and anomaloues forecast.
+"""
+
 from statsmodels.robust.scale import mad
 import numpy as np
 from . import ARIMAUtils as arimaUtil

@@ -1,5 +1,5 @@
 """
-Provides functions for estimating ARIMA parameters based on the Tran and Reed approach http://ieeexplore.ieee.org/document/1271185/
+Provides functions for estimating ARIMA parameters based on the Tran and Reed approach http://ieeexplore.ieee.org/document/1271185/.
 """
 
 

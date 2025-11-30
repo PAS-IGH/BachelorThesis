@@ -1,3 +1,7 @@
+"""
+Provides functions for evaluating model and outlier detector performance.
+"""
+
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import precision_score, recall_score
@@ -7,7 +11,7 @@ from . import OutlierDetectorUtil as outDetUtil
 
 def getEvaluationResults(df_test_base_results, df_test_ano_results):
     """
-    A function for evaluation outlier detector performance based on a confusion matrix.
+    A function for determining forecasting precision and determining outlier detector performance based on a confusion matrix.
     This function performs the following operations:
         1. Gets the base and anomalous forecast based on the length of their respective test sets
         2. Gets the base and anomalous forecast based on the length of their non-respective test sets
