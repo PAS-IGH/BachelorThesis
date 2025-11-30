@@ -5,20 +5,16 @@ import matplotlib.pyplot as plt
 def getTrendStrength(df_stl_trend, df_stl_residual):
     
     """
-    Calculates the trend strength based on STL components as shown by Hyndman
-    by taking the variance of the residuals and dividing by 
-    the variance of the sum of the trend and residuals.
+    Calculates the trend strength based on the residual and trend component as shown by Hyndman and Athanasopoulos
     This function performs the following operations:
-        1. Computes the sum of a given residual and trend provided by STL
-        2. Gets the variance of the residual and sum of the trend and residuals
-        3. Applies the formula with the components
-    
+        1. Computes the components and inserts them into the formula
+        2. Returns the trend strength 
     Args:
-        df_stl_trend (pd.Series): Smoothed trend series
-        df_stl_residual (pd.Series): Smooted residual series
+        df_stl_trend (pd.DataSeries): Trend component
+        df_stl_residual (pd.DataSeries): Residual component
 
     Returns:
-        A factor indicating trend strength
+        (float): A floating point number indicating trend strength
     """
     n_sum_res_trend = df_stl_residual + df_stl_trend 
 
@@ -29,10 +25,23 @@ def getTrendStrength(df_stl_trend, df_stl_residual):
     return max(0 , n_trend_strength)
 
 def getTrending (df_stl_trend, df_stl_residual, dict_results): 
-# Returns a bool indicating a trend
+
+    """
+    Decides if the given trend strength warrants a trending series
+    This function performs the following operations:
+        1. Obtains the trend strength
+        2. Returns the result
+    Args:
+        df_stl_trend (pd.DataSeries): Trend component
+        df_stl_residual (pd.DataSeries): Residual component
+        dict_results (dict): A dictionary containing information of previous time series analysis steps
+    Returns:
+        (bool): A boolean indicating a trending series 
+    """
+
     n_trend_strength = getTrendStrength(df_stl_trend, df_stl_residual)
 
-    # === save the trend result 0============================================
+    # === Save the trend result ============================================
     dict_results["trend_info"] = {
         "trend_strength": n_trend_strength
     }

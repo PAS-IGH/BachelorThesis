@@ -4,22 +4,21 @@ import math as math
 
 def createTimeSeriesDataFrame(dfData, sDepVar, sRenameDepVar ="y", bGerman = True):
      """ 
-     Process a given data frame and gives back one with a single column and panda indexing (0, ... , N)
+     Process a given data frame and gives back series with dependent variabel for time series analysis.
      This function performs the following operations:
           1. Copies the given data frame and renames the dependant variable coloumn
           2. Replaces any ',' with '.' in order to avoid crashing of panda and related methods to the inability of handling German type floating point numbers
           3. Ensure that the dependent variable contains numeric values only
- 
+          4. Returns a dataframe for time series analysis
      Args:
           dfData (pd.DataFrame): The data given as a frame 
           sDepVar (str): The name of the desired dependent variable
           sRenamDepVar (str): String for renaming the desired dependent variable
-          bGerman (bool): Expecting German floating point numbers
+          bGerman (bool): Boolean value in case of German floating point numbers
 
      Returns:
-          A dataframe with the standardized index as independent and the coloumn as the dependent variable
+          dataFrame (pandas.DataFrame): A dataframe with a standardized index as the independent and the coloumn as the dependent variable
      """
-    # The reason why timestamp is "uninteristing" as the index is due to drill length already dictating the equidistance rather then the timestamp
      dataFrame = dfData[[sDepVar]].copy() 
      if sRenameDepVar:
           dataFrame.rename(columns={sDepVar:sRenameDepVar}, inplace=True)
@@ -34,6 +33,24 @@ def createTimeSeriesDataFrame(dfData, sDepVar, sRenameDepVar ="y", bGerman = Tru
 
 def getTrainAndTestSet(dfData, nObsPerSeason, depVar, sRenameDepVar, bGerman, n_Split): 
 
+     """ 
+     A wrapper function for returning a training and test set.
+     This function performs the following operations:
+          1. Computes the season length based on given seasons and amount of observations
+          2. Applies createTimeSeriesDataFrame to get both sets
+          3. Returns the set as a tuple
+
+     Args:
+          dfData (pd.DataFrame): The data given as a frame 
+          sDepVar (str): The name of the desired dependent variable
+          sRenamDepVar (str): String for renaming the desired dependent variable
+          bGerman (bool): Boolean value in case of German floating point numbers
+
+     Returns:
+          tuple (df_train_set, df_test_set): 
+               df_train_set (pandas.DataFrame): The training set
+               df_test_set (pandas.DataFrame): The test set
+     """
      n_seasons = int(len(dfData) / nObsPerSeason) # get the amount of seasons
      n_seasons_train = int(math.floor(n_seasons * n_Split)) #get the amount of seasons for training set)
      n_observ_train = n_seasons_train * nObsPerSeason #get the amount of observations for train set

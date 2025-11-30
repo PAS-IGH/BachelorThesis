@@ -3,7 +3,22 @@ from statsmodels.tsa.stattools import adfuller as adf
 from statsmodels.tsa.stattools import kpss
 
 def getStatInd(df_DataSeries, n_alpha, s_test_type, bTrending, dict_results):
-    # n_Stationary =  getStationary(df_DataSeries, s_regress, n_alpha, s_test_type, dict_results)
+    """
+    A wrapper function for returning the stationary type.
+    This function performs the following operations:
+        1. Decides on a regression form; ct = constatn with trend, c = constant without trend
+        2. Applies stationary test
+        3. Obtains the stationary type and returns a dictionary object with the information
+    Args:
+        df_DataSeries (pandas.DataSeries): A dataseries containing the set needed to perform the tests
+        n_alpha (float): A floating point value for tests invloving an alpha value
+        s_test_type (str): A string containing the stationary test type
+        bTrending (bool): A boolean signaling if the given series is trending
+        dict_results (dict): A dictionary containing information of previous time series analysis steps
+    Returns
+        dict_results (dict): Passes on the information gathered
+    """
+
     dict_stat = {
         "b_Difference": False,
         "b_Detrend": False,
@@ -29,20 +44,18 @@ def getStatInd(df_DataSeries, n_alpha, s_test_type, bTrending, dict_results):
 
 def getStationary(df_DataSeries, s_regress, n_alpha, s_test_type, dict_results):
     """
-    Tells if a series is stationary or not with a given test and alpha value
+    Checks a series stationarity with a given test and alpha value.
     This function performs the following operations:
-        1. Takes the received params and runs the specific methods based on the test type
-        2. Indicates if stationary or not; depending on the regression type, the interpretation varies
+        1. Performs the test as indicated by the parameters
+        2. Passes on the resutl of checkStatADFKPSS()
     Args:
         df_DataSeries (pd.Series): A series which is tested on its stationarity
         s_regress (str): A string dictating regression type (ct = constant and trend, c=constant, n = no constant/trend)
         s_alpha (str): A string indicating the percentage for the alpha value
-        s_test_type (str): The type desired test 
+        s_test_type (str): The desired test type
+        dict_results (dict): A dictionary containing information of previous time series analysis steps
     Returns:
-        A integer indicating the stationary status
-        * 0 : stationary
-        * 1 : non stationary
-        * -1: inconcusive
+        (str): A string containing the stationary type
     """
     trFloatingAlphaToString(n_alpha)
 
@@ -55,17 +68,17 @@ def getStationary(df_DataSeries, s_regress, n_alpha, s_test_type, dict_results):
 
 def checkStatADFKPSS (df_DataSeries, s_ARParam, s_alpha, dict_results):
     """
-    Provides the result of the conjoined ADF and KPSS test 
+    Provides the result of the combined ADF and KPSS test. 
     This function performs the following operations:
         1. Gets the results of ADF and KPSS hypothesis tests
-        2. Based on the KPSS paper by Kwiatkowski et al. interprets these 
-
-    Args: 
+        2. Interprets the results and returns the stationary type
+    Args:
         df_DataSeries (pd.Series): A series which is tested on its stationarity
-        s_regress (str): A string dictating regression type (ct = constant and trend, c=constant, n = no constant/trend)
+        s_ARParam (str): A string dictating regression type (ct = constant and trend, c=constant, n = no constant/trend)
         s_alpha (str): A string indicating the percentage for the alpha value
+        dict_results (dict): A dictionary containing information of previous time series analysis steps
     Returns:
-        A string indicating stationary type
+        str_stat_type (str): A string indicating stationary type
     """
     adfRes = adfWrapper(df_DataSeries, s_ARParam, s_alpha, dict_results)
     kpssResult = kpssWrapper(df_DataSeries, s_ARParam, s_alpha, dict_results)
@@ -125,17 +138,15 @@ def adfWrapper(df_DataSeries, s_ARParam, s_alpha, dict_results):
     """
     Provides the result of the ADF test
     This function performs the following operations:
-        1. Gets the test statistic and critical value based on alpha
+        1. Obtains the test statistic and critical value based on alpha
         2. Compares these and rejects or fails to reject H_0 
-
-    Args: 
+    Args:
         df_DataSeries (pd.Series): A series which is tested on its stationarity
-        s_regress (str): A string dictating regression type (ct = constant and trend, c=constant, n = no constant/trend)
+        s_ARParam (str): A string dictating regression type (ct = constant and trend, c=constant, n = no constant/trend)
         s_alpha (str): A string indicating the percentage for the alpha value
+        dict_results (dict): A dictionary containing information of previous time series analysis steps
     Returns:
         A boolean indicating the result of the hypothesis test
-        * True : H_0 rejection failure
-        * False : H_1 was rejected 
     """
     t_adf = adf(df_DataSeries, regression =s_ARParam, autolag="AIC") #get the test statistic and critical value
     n_adf_stat= t_adf[0]
@@ -160,17 +171,15 @@ def kpssWrapper(df_DataSeries, s_ARParam, s_alpha, dict_results):
     """
     Provides the result of the KPSS test
     This function performs the following operations:
-        1. Gets the test statistic and critical value based on alpha
+        1. Obtains the test statistic and critical value based on alpha
         2. Compares these and rejects or fails to reject H_0 
-
-    Args: 
+    Args:
         df_DataSeries (pd.Series): A series which is tested on its stationarity
-        s_regress (str): A string dictating regression type (ct = constant and trend, c=constant, n = no constant/trend)
+        s_ARParam (str): A string dictating regression type (ct = constant and trend, c=constant, n = no constant/trend)
         s_alpha (str): A string indicating the percentage for the alpha value
+        dict_results (dict): A dictionary containing information of previous time series analysis steps
     Returns:
         A boolean indicating the result of the hypothesis test
-        * True : H_0 rejection failure
-        * False : H_1 was rejected 
     """
     t_kpss = kpss(df_DataSeries, regression=s_ARParam)
     n_kpss_stat = t_kpss[0]
@@ -193,13 +202,13 @@ def kpssWrapper(df_DataSeries, s_ARParam, s_alpha, dict_results):
 def trFloatingAlphaToString(n_alpha): 
 
     """
-    Turns a numerical alpha into a string in order to use the tests
+    A function to turn a numerical alpha value to a string one.
     This function performs the following operations:
-        1. Takes a floating point alpha value and turns it into <number>% string
+        1. Takes a floating point alpha value and turns it into string
     Args:
         n_alpha(nr): A floating point alpha value
     Returns
-        A alpha value string
+        (str): A alpha value string
     """
     n_percent = int(n_alpha * 100)
     return f"{n_percent}%"
